@@ -1,5 +1,6 @@
 package com.jira_client.controller;
 
+import com.jira_client.model.Issue;
 import com.jira_client.service.JiraService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ public class JiraController {
 
     @Operation(summary = "Get an Issue based on it's unique key")
     @GetMapping("/api/issues/{key}")
-    public String getRawIssue(@PathVariable String key) {
+    public Issue getRawIssue(@PathVariable String key) {
         return jiraService.getRawIssue(key);
     }
 }
