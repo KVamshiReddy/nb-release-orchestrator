@@ -1,4 +1,4 @@
-package com.jira_client.config;
+package com.nbro.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

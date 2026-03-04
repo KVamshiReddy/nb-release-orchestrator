@@ -1,13 +1,13 @@
-package com.jira_client;
+package com.nbro;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class JiraClientApplication {
+public class NbReleaseOrchestratorApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(JiraClientApplication.class, args);
+		SpringApplication.run(NbReleaseOrchestratorApplication.class, args);
 	}
 
 }

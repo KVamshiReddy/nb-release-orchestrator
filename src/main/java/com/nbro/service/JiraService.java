@@ -1,11 +1,11 @@
-package com.jira_client.service;
+package com.nbro.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jira_client.config.JiraConfig;
-import com.jira_client.model.Assignee;
-import com.jira_client.model.Issue;
+import com.nbro.config.JiraConfig;
+import com.nbro.domain.entity.Assignee;
+import com.nbro.domain.entity.Issue;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
