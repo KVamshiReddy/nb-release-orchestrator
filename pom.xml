@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
-	<artifactId>jira-client</artifactId>
+	<artifactId>nbro</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>jira-client</name>
 	<description>Jira Client REST API Integration</description>

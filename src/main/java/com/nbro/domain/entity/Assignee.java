@@ -1,4 +1,4 @@
-package com.jira_client.model;
+package com.nbro.domain.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

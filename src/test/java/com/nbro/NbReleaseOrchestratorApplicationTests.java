@@ -1,10 +1,10 @@
-package com.jira_client;
+package com.nbro;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class JiraClientApplicationTests {
+class NbReleaseOrchestratorApplicationTests {
 
 	@Test
 	void contextLoads() {
