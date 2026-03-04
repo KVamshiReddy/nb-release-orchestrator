@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NBReleaseOrchestrator — Portal Wireframes & DB Schema</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:    #0A1628;
+  --navy2:   #0F2040;
+  --blue:    #1D4ED8;
+  --blue2:   #2563EB;
+  --blue-lt: #BFDBFE;
+  --accent:  #EFF6FF;
+  --teal:    #0F766E;
+  --teal-lt: #CCFBF1;
+  --green:   #15803D;
+  --grn-lt:  #DCFCE7;
+  --amber:   #B45309;
+  --amb-lt:  #FEF3C7;
+  --red:     #B91C1C;
+  --red-lt:  #FEE2E2;
+  --purple:  #6D28D9;
+  --pur-lt:  #EDE9FE;
+  --g1:      #F8FAFC;
+  --g2:      #F1F5F9;
+  --g3:      #E2E8F0;
+  --g4:      #94A3B8;
+  --g5:      #64748B;
+  --text:    #0F172A;
+  --text2:   #334155;
+  --white:   #FFFFFF;
+  --shadow:  0 1px 3px rgba(0,0,0,.07), 0 4px 14px rgba(0,0,0,.05);
+  --shadow2: 0 4px 24px rgba(10,22,40,.14);
+  --r:       10px;
+  --r-sm:    6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#0A1628;color:var(--text);}
+
+/* ── COVER ───────────────────────────────────────────────────── */
+.cover{
+  background:linear-gradient(145deg,#0A1628 0%,#1D3461 50%,#0F766E 100%);
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:60px 40px;position:relative;overflow:hidden;
+}
+.cover-grid{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+.cover-pill{display:inline-flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+  border-radius:100px;padding:6px 18px;font-size:12px;color:#93C5FD;
+  letter-spacing:2px;text-transform:uppercase;margin-bottom:28px;position:relative;}
+.blink{width:8px;height:8px;border-radius:50%;background:#34D399;box-shadow:0 0 10px #34D399;animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.cover h1{font-size:90px;font-weight:700;color:#FCD34D;letter-spacing:-3px;line-height:1;position:relative;}
+.cover-sub{font-size:22px;color:#93C5FD;font-weight:300;margin:8px 0;position:relative;}
+.cover-tag{font-size:15px;color:#64748B;font-style:italic;margin-bottom:48px;position:relative;}
+.cover-chips{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;position:relative;margin-bottom:20px;}
+.chip{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:14px 22px;text-align:center;}
+.chip .n{font-size:28px;font-weight:700;color:#34D399;}
+.chip .l{font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.cover-note{font-size:12px;color:#475569;position:relative;}
+.cover-note span{color:#93C5FD;font-weight:600;}
+
+/* ── SECTION WRAPPER ─────────────────────────────────────────── */
+.section{background:var(--g1);padding:56px 40px;border-top:4px solid var(--navy);}
+.section:nth-child(even){background:#F0F4FF;}
+.section-label{display:flex;align-items:center;gap:14px;margin-bottom:28px;flex-wrap:wrap;}
+.sec-num{background:var(--navy);color:#FCD34D;font-family:'DM Mono',monospace;
+  font-size:12px;padding:5px 14px;border-radius:4px;letter-spacing:1px;}
+.sec-title{font-size:24px;font-weight:700;color:var(--navy);}
+.sec-desc{font-size:13px;color:var(--g5);margin-top:3px;}
+.sec-role{margin-left:auto;background:var(--accent);border:1px solid var(--blue-lt);
+  border-radius:100px;padding:4px 14px;font-size:12px;color:var(--blue2);font-weight:600;}
+
+/* ── BROWSER ─────────────────────────────────────────────────── */
+.browser{background:#fff;border-radius:14px;box-shadow:var(--shadow2),0 0 0 1px rgba(0,0,0,.05);overflow:hidden;}
+.bar{background:#F3F4F6;border-bottom:1px solid #E5E7EB;padding:10px 16px;display:flex;align-items:center;gap:12px;}
+.dots{display:flex;gap:5px;}
+.dots span{width:11px;height:11px;border-radius:50%;}
+.dr{background:#FF5F57;}.dy{background:#FFBD2E;}.dg{background:#28C840;}
+.url{flex:1;background:#fff;border:1px solid #E5E7EB;border-radius:5px;
+  padding:4px 12px;font-family:'DM Mono',monospace;font-size:12px;color:var(--g5);}
+.wire-note{background:var(--navy);color:#34D399;font-family:'DM Mono',monospace;
+  font-size:11px;padding:6px 16px;display:flex;align-items:center;justify-content:space-between;}
+.wire-note .dim{color:#334155;}
+
+/* ── APP SHELL ───────────────────────────────────────────────── */
+.app{display:flex;height:680px;overflow:hidden;}
+
+/* ── SIDEBAR ─────────────────────────────────────────────────── */
+.sb{width:210px;flex-shrink:0;background:var(--navy);display:flex;flex-direction:column;}
+.sb-logo{padding:18px 16px 12px;border-bottom:1px solid rgba(255,255,255,.07);}
+.logo-n{font-size:21px;font-weight:700;color:#FCD34D;letter-spacing:-0.5px;}
+.logo-s{font-size:10px;color:#475569;margin-top:1px;letter-spacing:1.5px;text-transform:uppercase;}
+.sb-user{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:9px;}
+.av{width:28px;height:28px;border-radius:50%;background:var(--blue2);
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;}
+.un{font-size:12px;color:#E2E8F0;font-weight:600;}
+.ur{font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:.5px;}
+.sb-nav{flex:1;padding:6px 0;overflow-y:auto;}
+.nav-grp{font-size:9px;color:#334155;text-transform:uppercase;letter-spacing:1.5px;
+  padding:10px 16px 5px;font-weight:700;}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 16px;
+  font-size:12px;color:#64748B;cursor:pointer;border-left:3px solid transparent;}
+.ni.on{background:rgba(29,78,216,.2);color:#60A5FA;border-left-color:#34D399;}
+.ni:hover{background:rgba(255,255,255,.03);color:#CBD5E1;}
+.ni-ico{width:15px;text-align:center;font-size:13px;}
+.nbadge{margin-left:auto;background:var(--amber);color:#fff;
+  font-size:9px;font-weight:700;padding:1px 6px;border-radius:100px;}
+.nbadge.b{background:var(--blue2);}
+
+/* ── MAIN ────────────────────────────────────────────────────── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--g1);}
+.topbar{background:#fff;border-bottom:1px solid var(--g3);padding:11px 22px;
+  display:flex;align-items:center;gap:14px;flex-shrink:0;}
+.tb-title{font-size:17px;font-weight:700;color:var(--navy);}
+.tb-bc{font-size:11px;color:var(--g4);margin-top:1px;}
+.tb-actions{margin-left:auto;display:flex;gap:8px;align-items:center;}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;
+  border-radius:var(--r-sm);font-size:12px;font-weight:600;cursor:pointer;
+  border:none;font-family:'DM Sans',sans-serif;}
+.bp{background:var(--blue2);color:#fff;}
+.bs{background:var(--g2);color:var(--text2);border:1px solid var(--g3);}
+.bg{background:var(--green);color:#fff;}
+.br{background:var(--red);color:#fff;}
+.bo{background:transparent;color:var(--blue2);border:1.5px solid var(--blue2);}
+.sm{padding:4px 10px;font-size:11px;}
+.content{flex:1;overflow-y:auto;padding:18px 22px;}
+
+/* ── KPI ─────────────────────────────────────────────────────── */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px;}
+.kpi{background:#fff;border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow);border-left:4px solid transparent;}
+.kpi.blue{border-left-color:var(--blue2);}
+.kpi.green{border-left-color:var(--green);}
+.kpi.amber{border-left-color:var(--amber);}
+.kpi.teal{border-left-color:var(--teal);}
+.kpi-lbl{font-size:10px;color:var(--g4);text-transform:uppercase;letter-spacing:1px;font-weight:600;}
+.kpi-val{font-size:34px;font-weight:700;color:var(--navy);line-height:1.2;margin:3px 0;}
+.kpi-delta{font-size:11px;color:var(--green);}
+
+/* ── CARD ────────────────────────────────────────────────────── */
+.g2c{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.card{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;}
+.card-h{padding:12px 16px;border-bottom:1px solid var(--g3);display:flex;align-items:center;gap:8px;}
+.card-h h3{font-size:13px;font-weight:700;color:var(--navy);}
+.card-b{padding:14px 16px;}
+
+/* ── STATUS BADGE ────────────────────────────────────────────── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;}
+.b-pend{background:#FEF3C7;color:#B45309;}.b-pend::before{background:#B45309;}
+.b-appr{background:#DCFCE7;color:#15803D;}.b-appr::before{background:#15803D;}
+.b-prog{background:#BFDBFE;color:#1D4ED8;}.b-prog::before{background:#1D4ED8;}
+.b-depl{background:#CCFBF1;color:#0F766E;}.b-depl::before{background:#0F766E;}
+.b-rejt{background:#FEE2E2;color:#B91C1C;}.b-rejt::before{background:#B91C1C;}
+.b-drft{background:var(--g2);color:var(--g5);border:1px solid var(--g3);}.b-drft::before{background:var(--g5);}
+.b-cab{background:#EDE9FE;color:#6D28D9;}.b-cab::before{background:#6D28D9;}
+.b-rbk{background:#FEF3C7;color:#B45309;}.b-rbk::before{background:#B45309;}
+
+/* ── TABLE ───────────────────────────────────────────────────── */
+.rt{width:100%;border-collapse:collapse;font-size:12px;}
+.rt th{text-align:left;padding:9px 11px;font-size:10px;font-weight:700;color:var(--g4);
+  text-transform:uppercase;letter-spacing:.8px;border-bottom:2px solid var(--g3);background:var(--g1);}
+.rt td{padding:10px 11px;border-bottom:1px solid var(--g3);vertical-align:middle;}
+.rt tr:hover td{background:var(--accent);}
+.tkey{font-family:'DM Mono',monospace;font-size:11px;color:var(--blue2);font-weight:500;}
+.env{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;}
+.ep{background:#FEE2E2;color:#B91C1C;}
+.es{background:#FEF3C7;color:#B45309;}
+.abts{display:flex;gap:5px;}
+
+/* ── ACTIVITY ────────────────────────────────────────────────── */
+.act-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--g3);}
+.act-item:last-child{border:none;}
+.act-dot{width:7px;height:7px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.act-txt{font-size:12px;color:var(--text2);line-height:1.4;}
+.act-txt strong{color:var(--text);}
+.act-time{font-size:10px;color:var(--g4);margin-top:2px;}
+
+/* ── DONUT ───────────────────────────────────────────────────── */
+.donut{width:120px;height:120px;border-radius:50%;
+  background:conic-gradient(var(--green) 0deg 90deg,var(--blue2) 90deg 198deg,var(--amber) 198deg 270deg,var(--g3) 270deg 360deg);
+  position:relative;}
+.donut::after{content:'';position:absolute;inset:28px;background:#fff;border-radius:50%;}
+.dc{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--navy);}
+.dc small{font-size:9px;color:var(--g4);}
+.leg-item{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text2);margin:4px 0;}
+.leg-dot{width:9px;height:9px;border-radius:2px;}
+
+/* ── CAL ─────────────────────────────────────────────────────── */
+.cal-strip{display:flex;gap:7px;overflow-x:auto;padding:2px 0;}
+.cal-d{flex-shrink:0;width:48px;border-radius:7px;padding:7px 5px;text-align:center;
+  border:1px solid var(--g3);background:#fff;}
+.cal-d.has{background:var(--accent);border-color:var(--blue-lt);}
+.cal-d.today{background:var(--navy);border-color:var(--navy);}
+.cal-d.today .cd{color:#fff;}.cal-d.today .cdow{color:#334155;}
+.cdow{font-size:9px;color:var(--g4);text-transform:uppercase;letter-spacing:.5px;}
+.cd{font-size:18px;font-weight:700;color:var(--navy);margin:2px 0;}
+.cdot{width:5px;height:5px;border-radius:50%;background:var(--blue2);margin:0 auto;}
+
+/* ── DETAIL HERO ─────────────────────────────────────────────── */
+.d-hero{background:linear-gradient(135deg,var(--navy) 0%,var(--blue) 100%);
+  padding:20px 24px;color:#fff;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+.d-key{font-family:'DM Mono',monospace;font-size:12px;color:#93C5FD;margin-bottom:5px;}
+.d-title{font-size:18px;font-weight:700;line-height:1.3;}
+.d-meta{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap;}
+.dm-item{font-size:11px;color:#93C5FD;}
+.dm-item strong{color:#fff;}
+.tabs{display:flex;border-bottom:2px solid var(--g3);background:#fff;}
+.tab{padding:11px 18px;font-size:12px;font-weight:600;color:var(--g4);
+  cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;}
+.tab.on{color:var(--blue2);border-bottom-color:var(--blue2);}
+.tab-c{padding:18px;background:#fff;overflow-y:auto;max-height:380px;}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fi .fl{font-size:10px;color:var(--g4);text-transform:uppercase;letter-spacing:.8px;font-weight:600;margin-bottom:3px;}
+.fi .fv{font-size:12px;color:var(--text);font-weight:500;}
+
+/* ── TIMELINE ────────────────────────────────────────────────── */
+.tl{position:relative;padding-left:24px;}
+.tl::before{content:'';position:absolute;left:6px;top:0;bottom:0;width:2px;background:var(--g3);}
+.tli{position:relative;margin-bottom:14px;}
+.tl-dot{position:absolute;left:-20px;top:4px;width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 2px var(--g3);}
+.tl-card{background:#fff;border-radius:7px;padding:10px 12px;box-shadow:var(--shadow);}
+.tl-act{font-size:12px;font-weight:700;color:var(--text);}
+.tl-sub{font-size:11px;color:var(--g4);margin-top:2px;}
+
+/* ── FILTER BAR ──────────────────────────────────────────────── */
+.fbar{display:flex;gap:8px;align-items:center;padding:10px 16px;
+  background:#fff;border-bottom:1px solid var(--g3);flex-wrap:wrap;}
+.fsel{padding:5px 10px;border:1.5px solid var(--g3);border-radius:5px;
+  font-size:11px;color:var(--text2);font-family:'DM Sans',sans-serif;background:#fff;}
+.srch{flex:1;min-width:180px;padding:6px 12px;border:1.5px solid var(--g3);border-radius:5px;
+  font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);}
+
+/* ── DEVOPS QUEUE ────────────────────────────────────────────── */
+.dq-card{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:10px;
+  overflow:hidden;border:1px solid var(--g3);}
+.dq-top{padding:12px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--g3);}
+.pbar{width:4px;border-radius:4px;align-self:stretch;}
+.ph{background:var(--red);}
+.pm{background:var(--amber);}
+.dq-body{padding:10px 16px;display:flex;gap:14px;flex-wrap:wrap;}
+.dm{font-size:11px;color:var(--g5);}
+.dm strong{color:var(--text);display:block;}
+.dq-acts{padding:10px 16px;border-top:1px solid var(--g3);display:flex;gap:7px;background:var(--g1);}
+
+/* ── ANNOTATIONS ─────────────────────────────────────────────── */
+.annots{margin-top:18px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.annot{background:#fff;border-radius:8px;padding:12px 14px;border-left:4px solid var(--blue2);box-shadow:var(--shadow);}
+.annot.g{border-left-color:var(--green);}
+.annot.a{border-left-color:var(--amber);}
+.annot h4{font-size:11px;font-weight:700;color:var(--navy);margin-bottom:5px;}
+.annot p{font-size:11px;color:var(--g5);line-height:1.5;}
+
+/* ── LOGIN ───────────────────────────────────────────────────── */
+.login-bg{min-height:560px;background:linear-gradient(160deg,var(--navy) 0%,#1E3A8A 100%);
+  display:flex;align-items:center;justify-content:center;padding:40px;}
+.login-card{background:#fff;border-radius:14px;padding:36px;width:360px;box-shadow:var(--shadow2);}
+.login-logo{font-size:30px;font-weight:700;color:var(--navy);text-align:center;margin-bottom:3px;}
+.login-logo span{color:#FCD34D;}
+.login-sub{font-size:12px;color:var(--g4);text-align:center;margin-bottom:24px;}
+.fg2{margin-bottom:14px;}
+.flbl{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;display:block;}
+.finp{width:100%;padding:9px 12px;border:1.5px solid var(--g3);border-radius:5px;
+  font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:18px;}
+.rpill{padding:7px 10px;border-radius:7px;border:1.5px solid var(--g3);
+  font-size:10px;font-weight:600;text-align:center;cursor:pointer;color:var(--g5);}
+.rpill.on{background:var(--accent);border-color:var(--blue2);color:var(--blue2);}
+.login-btn{width:100%;padding:11px;font-size:14px;font-weight:700;
+  background:var(--navy);color:#fff;border:none;border-radius:7px;cursor:pointer;
+  font-family:'DM Sans',sans-serif;}
+
+/* ══════════════════════════════════════════════════════════════
+   DB SCHEMA STYLES
+════════════════════════════════════════════════════════════════ */
+.db-section{background:#0F172A;padding:60px 40px;}
+.db-title{text-align:center;margin-bottom:48px;}
+.db-title h2{font-size:36px;font-weight:700;color:#FCD34D;letter-spacing:-1px;}
+.db-title p{font-size:14px;color:#475569;margin-top:8px;font-style:italic;}
+
+/* ERD Overview */
+.erd-overview{max-width:1100px;margin:0 auto 56px;background:#1E293B;border-radius:16px;
+  padding:32px;border:1px solid rgba(255,255,255,.08);}
+.erd-overview h3{font-size:18px;font-weight:700;color:#E2E8F0;text-align:center;margin-bottom:28px;}
+.erd-tables{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;justify-content:center;}
+.erd-table{background:#0F172A;border:2px solid;border-radius:10px;overflow:hidden;min-width:140px;}
+.erd-table-hdr{padding:10px 14px;font-size:13px;font-weight:700;font-family:'DM Mono',monospace;}
+.erd-table-body{padding:8px 0;}
+.erd-col{padding:4px 14px;font-size:11px;font-family:'DM Mono',monospace;
+  display:flex;align-items:center;gap:8px;}
+.erd-pk{color:#FCD34D;font-weight:700;}
+.erd-fk{color:#93C5FD;}
+.erd-col-name{color:#CBD5E1;}
+.erd-col-type{color:#475569;font-size:10px;margin-left:auto;}
+.erd-divider{height:1px;background:rgba(255,255,255,.06);margin:4px 0;}
+
+/* Relationship lines label */
+.erd-rel{display:flex;align-items:center;justify-content:center;margin:20px 0;flex-wrap:wrap;gap:16px;}
+.rel-item{display:flex;align-items:center;gap:8px;font-size:12px;color:#64748B;}
+.rel-line{width:40px;height:2px;}
+.rel-line.one{background:#34D399;}
+.rel-line.many{background:#93C5FD;border-top:2px dashed #93C5FD;background:transparent;}
+
+/* Table color themes */
+.t-users{border-color:#34D399;}.t-users .erd-table-hdr{background:#064E3B;color:#34D399;}
+.t-releases{border-color:#60A5FA;}.t-releases .erd-table-hdr{background:#1E3A8A;color:#60A5FA;}
+.t-approvals{border-color:#C084FC;}.t-approvals .erd-table-hdr{background:#3B0764;color:#C084FC;}
+.t-audit{border-color:#FCD34D;}.t-audit .erd-table-hdr{background:#451A03;color:#FCD34D;}
+.t-notif{border-color:#F87171;}.t-notif .erd-table-hdr{background:#450A0A;color:#F87171;}
+
+/* FK arrow decoration */
+.fk-arr{font-size:14px;color:#475569;text-align:center;margin:4px 0;}
+
+/* Full Schema Tables */
+.schema-block{max-width:1100px;margin:0 auto 48px;background:#1E293B;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.06);}
+.schema-block-hdr{padding:14px 22px;display:flex;align-items:center;gap:12px;}
+.schema-block-hdr .tname{font-family:'DM Mono',monospace;font-size:16px;font-weight:700;}
+.schema-block-hdr .tpurp{font-size:12px;opacity:.6;margin-left:auto;}
+.schema-tbl{width:100%;border-collapse:collapse;}
+.schema-tbl thead th{text-align:left;padding:10px 16px;font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:1px;background:#0F172A;border-bottom:1px solid rgba(255,255,255,.08);}
+.schema-tbl tbody tr:nth-child(even) td{background:rgba(255,255,255,.02);}
+.schema-tbl tbody tr:hover td{background:rgba(255,255,255,.04);}
+.schema-tbl td{padding:9px 16px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:top;}
+.col-name{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;}
+.col-type{font-family:'DM Mono',monospace;font-size:11px;}
+.col-pk{background:#FCD34D20;color:#FCD34D;}
+.col-fk{background:#93C5FD20;color:#93C5FD;}
+.col-constraint{font-family:'DM Mono',monospace;font-size:10px;color:#F59E0B;}
+.col-desc{font-size:12px;color:#64748B;line-height:1.4;}
+.col-idx-badge{font-size:9px;background:#34D39920;color:#34D399;padding:1px 6px;border-radius:4px;margin-left:6px;}
+
+/* Indexes section */
+.idx-block{max-width:1100px;margin:0 auto 48px;background:#1E293B;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.06);}
+.idx-hdr{padding:14px 22px;background:#0F172A;font-size:14px;font-weight:700;color:#34D399;border-bottom:1px solid rgba(255,255,255,.06);}
+.idx-tbl{width:100%;border-collapse:collapse;}
+.idx-tbl th{text-align:left;padding:9px 16px;font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:1px;}
+.idx-tbl td{padding:8px 16px;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px;}
+.idx-tbl tr:last-child td{border:none;}
+.idx-name{font-family:'DM Mono',monospace;color:#60A5FA;}
+.idx-col{font-family:'DM Mono',monospace;color:#C084FC;}
+.idx-tname{font-family:'DM Mono',monospace;color:#34D399;}
+.idx-reason{color:#64748B;}
+
+/* Constraint badges */
+.cbadge{display:inline-block;font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;margin-right:3px;}
+.c-pk{background:#FCD34D20;color:#FCD34D;}
+.c-fk{background:#93C5FD20;color:#93C5FD;}
+.c-nn{background:#34D39920;color:#34D399;}
+.c-uq{background:#F472B620;color:#F472B6;}
+.c-ck{background:#F87171;color:#fff;background:#F8717120;}
+.c-def{background:#A78BFA20;color:#A78BFA;}
+</style>
+</head>
+<body>
+
+<!-- ══ COVER ══════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-grid"></div>
+  <div class="cover-pill"><div class="blink"></div>Portal Wireframes + DB Schema · v3.0</div>
+  <h1>NBReleaseOrchestrator</h1>
+  <div class="cover-sub">Release Management Portal</div>
+  <div class="cover-tag">"Because every deployment is a show. Make yours worth watching."</div>
+  <div class="cover-chips">
+    <div class="chip"><div class="n">7</div><div class="l">Screens</div></div>
+    <div class="chip"><div class="n">7</div><div class="l">Roles</div></div>
+    <div class="chip"><div class="n">5</div><div class="l">DB Tables</div></div>
+    <div class="chip"><div class="n">REST</div><div class="l">Only</div></div>
+    <div class="chip"><div class="n">Java</div><div class="l">Spring Boot</div></div>
+  </div>
+  <div class="cover-note">
+    Screens: <span>Login</span> · <span>Dashboard</span> · <span>Release List</span> · <span>Release Detail</span> · <span>DevOps Queue</span> · <span>Audit Trail</span> · <span>Notifications</span>
+    &nbsp;·&nbsp; DB Schema: <span>5 tables</span> · <span>Full column specs</span> · <span>ERD</span> · <span>Indexes</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- SCREEN 1: LOGIN -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">
+    <div class="sec-num">SCREEN 01</div>
+    <div><div class="sec-title">Login Page</div><div class="sec-desc">JWT auth · Role selector (POC demo) · Spring Security 6</div></div>
+    <div class="sec-role">All Users</div>
+  </div>
+  <div class="browser">
+    <div class="bar"><div class="dots"><span class="dr"></span><span class="dy"></span><span class="dg"></span></div><div class="url">NBReleaseOrchestrator.io/login</div></div>
+    <div class="login-bg">
+      <div class="login-card">
+        <div class="login-logo">NBRelease<span>Orchestrator</span></div>
+        <div class="login-sub">Release Management Portal · Sign in to continue</div>
+        <div class="fg2"><label class="flbl">Email Address</label><input class="finp" value="devops@company.com" type="email"></div>
+        <div class="fg2"><label class="flbl">Password</label><input class="finp" value="••••••••" type="password"></div>
+        <div style="font-size:10px;color:var(--g4);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Select Role (POC Demo Mode)</div>
+        <div class="role-grid">
+          <div class="rpill">Dev Team</div><div class="rpill">Cross-Dev</div>
+          <div class="rpill on">DevOps</div><div class="rpill">Scrum Master</div>
+          <div class="rpill">Product Owner</div><div class="rpill">Release Mgr</div>
+        </div>
+        <button class="login-btn">Sign In to NBReleaseOrchestrator</button>
+        <div style="text-align:center;margin-top:12px;font-size:11px;color:var(--g4);">JWT · Spring Security 6 · Stateless Sessions</div>
+      </div>
+    </div>
+  </div>
+  <div class="annots">
+    <div class="annot"><h4>JWT on Login</h4><p>POST /api/v1/auth/login → Spring Security validates credentials → returns signed JWT (24h POC). Role embedded in JWT payload claim.</p></div>
+    <div class="annot g"><h4>Role Selector (POC Only)</h4><p>Removed in production. Replaced with OAuth 2.0 SSO (Okta/Azure AD). Role comes from directory, not a dropdown.</p></div>
+    <div class="annot a"><h4>Role-Based Redirect</h4><p>After login: DevOps → Deploy Queue. Release Mgr → Approvals. Stakeholder → Dashboard read-only. Handled by React Router.</p></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- SCREEN 2: DASHBOARD -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">
+    <div class="sec-num">SCREEN 02</div>
+    <div><div class="sec-title">Main Dashboard</div><div class="sec-desc">KPI cards · Status chart · Release calendar · Activity feed · My pending actions</div></div>
+    <div class="sec-role">All Roles (filtered)</div>
+  </div>
+  <div class="browser">
+    <div class="bar"><div class="dots"><span class="dr"></span><span class="dy"></span><span class="dg"></span></div><div class="url">NBReleaseOrchestrator.io/dashboard</div></div>
+    <div class="wire-note"><span>GET /api/v1/dashboard/stats · GET /api/v1/dashboard/calendar · WS /topic/releases</span><span class="dim">KPI · Chart · Calendar · Activity Feed</span></div>
+    <div class="app">
+      <div class="sb">
+        <div class="sb-logo"><div class="logo-n">NBReleaseOrchestrator</div><div class="logo-s">Release Portal</div></div>
+        <div class="sb-user"><div class="av">JR</div><div><div class="un">James R.</div><div class="ur">Release Manager</div></div></div>
+        <div class="sb-nav">
+          <div class="nav-grp">Main</div>
+          <div class="ni on"><span class="ni-ico">⊞</span>Dashboard</div>
+          <div class="ni"><span class="ni-ico">📋</span>Releases <span class="nbadge">12</span></div>
+          <div class="ni"><span class="ni-ico">✓</span>Approvals <span class="nbadge">3</span></div>
+          <div class="ni"><span class="ni-ico">📅</span>Calendar</div>
+          <div class="nav-grp">Reports</div>
+          <div class="ni"><span class="ni-ico">📊</span>Analytics</div>
+          <div class="ni"><span class="ni-ico">🔍</span>Audit Logs</div>
+          <div class="nav-grp">Admin</div>
+          <div class="ni"><span class="ni-ico">👥</span>Users</div>
+          <div class="ni"><span class="ni-ico">⚙</span>Settings</div>
+        </div>
+      </div>
+      <div class="main">
+        <div class="topbar">
+          <div><div class="tb-title">Dashboard</div><div class="tb-bc">NBReleaseOrchestrator · Overview · Aug 2025</div></div>
+          <div class="tb-actions">
+            <button class="btn bs sm">🔔 3</button>
+            <button class="btn bp sm">+ New Release</button>
+          </div>
+        </div>
+        <div class="content">
+          <div class="kpi-row">
+            <div class="kpi blue"><div class="kpi-lbl">Releases This Month</div><div class="kpi-val">24</div><div class="kpi-delta">↑ 4 vs last month</div></div>
+            <div class="kpi amber"><div class="kpi-lbl">Pending Approval</div><div class="kpi-val">3</div><div class="kpi-delta">2 require CAB review</div></div>
+            <div class="kpi teal"><div class="kpi-lbl">Active Deployments</div><div class="kpi-val">1</div><div class="kpi-delta">🟢 IN PROGRESS now</div></div>
+            <div class="kpi green"><div class="kpi-lbl">Completed</div><div class="kpi-val">18</div><div class="kpi-delta">75% success rate</div></div>
+          </div>
+          <div class="g2c">
+            <div class="card">
+              <div class="card-h"><h3>Release Status Overview</h3></div>
+              <div class="card-b" style="display:flex;align-items:center;gap:20px;">
+                <div style="position:relative;display:inline-block;"><div class="donut"></div><div class="dc">24<small>total</small></div></div>
+                <div>
+                  <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Deployed (9)</div>
+                  <div class="leg-item"><div class="leg-dot" style="background:var(--blue2)"></div>Approved (6)</div>
+                  <div class="leg-item"><div class="leg-dot" style="background:var(--amber)"></div>Pending (3)</div>
+                  <div class="leg-item"><div class="leg-dot" style="background:var(--g3)"></div>Draft / Other (6)</div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-h"><h3>Upcoming Releases</h3><span style="font-size:11px;color:var(--blue2);margin-left:auto;">View Calendar →</span></div>
+              <div class="card-b">
+                <div class="cal-strip">
+                  <div class="cal-d"><div class="cdow">MON</div><div class="cd">4</div></div>
+                  <div class="cal-d today"><div class="cdow">TUE</div><div class="cd">5</div></div>
+                  <div class="cal-d has"><div class="cdow">WED</div><div class="cd">6</div><div class="cdot"></div></div>
+                  <div class="cal-d"><div class="cdow">THU</div><div class="cd">7</div></div>
+                  <div class="cal-d has"><div class="cdow">FRI</div><div class="cd">8</div><div class="cdot"></div></div>
+                  <div class="cal-d"><div class="cdow">SAT</div><div class="cd">9</div></div>
+                  <div class="cal-d has"><div class="cdow">SUN</div><div class="cd">10</div><div class="cdot"></div></div>
+                </div>
+                <div style="margin-top:12px;">
+                  <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--g3);font-size:11px;"><div class="cdot" style="margin:0;background:var(--blue2);flex-shrink:0;"></div><span style="flex:1;color:var(--text2);">PROJ-1248 · Payment API v3.1</span><span style="color:var(--g4);">Aug 6 18:00</span></div>
+                  <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--g3);font-size:11px;"><div class="cdot" style="margin:0;background:var(--amber);flex-shrink:0;"></div><span style="flex:1;color:var(--text2);">PROJ-1251 · Auth Hotfix</span><span style="color:var(--g4);">Aug 8 21:00</span></div>
+                  <div style="display:flex;align-items:center;gap:8px;padding:7px 0;font-size:11px;"><div class="cdot" style="margin:0;background:var(--green);flex-shrink:0;"></div><span style="flex:1;color:var(--text2);">PROJ-1255 · Inventory v2</span><span style="color:var(--g4);">Aug 10 02:00</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="g2c">
+            <div class="card">
+              <div class="card-h"><h3>⚡ My Pending Actions</h3><span class="nbadge b" style="font-size:10px;">3</span></div>
+              <div class="card-b" style="padding:0;">
+                <table class="rt"><thead><tr><th>Ticket</th><th>Action</th><th>Due</th></tr></thead><tbody>
+                  <tr><td><span class="tkey">PROJ-1248</span></td><td><span class="badge b-pend">Approve</span></td><td style="font-size:10px;color:var(--amber);">Today</td></tr>
+                  <tr><td><span class="tkey">PROJ-1245</span></td><td><span class="badge b-cab">CAB Review</span></td><td style="font-size:10px;color:var(--g4);">Aug 7</td></tr>
+                  <tr><td><span class="tkey">PROJ-1241</span></td><td><span class="badge b-depl">Verify</span></td><td style="font-size:10px;color:var(--g4);">Aug 6</td></tr>
+                </tbody></table>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-h"><h3>Recent Activity</h3><span style="font-size:11px;color:#34D399;margin-left:auto;">🔴 Live</span></div>
+              <div class="card-b" style="padding:10px 14px;">
+                <div class="act-item"><div class="act-dot" style="background:var(--green)"></div><div><div class="act-txt"><strong>PROJ-1241</strong> deployed successfully to production</div><div class="act-time">2 min ago · Sarah K. (DevOps)</div></div></div>
+                <div class="act-item"><div class="act-dot" style="background:var(--blue2)"></div><div><div class="act-txt"><strong>PROJ-1248</strong> submitted for approval</div><div class="act-time">18 min ago · Raj P. (Dev)</div></div></div>
+                <div class="act-item"><div class="act-dot" style="background:var(--amber)"></div><div><div class="act-txt"><strong>PROJ-1247</strong> escalated to CAB Review</div><div class="act-time">1 hr ago · James R. (Release Mgr)</div></div></div>
+                <div class="act-item"><div class="act-dot" style="background:var(--red)"></div><div><div class="act-txt"><strong>PROJ-1244</strong> rejected — missing rollback plan</div><div class="act-time">3 hr ago · James R.</div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="annots">
+    <div class="annot"><h4>WebSocket Live Updates</h4><p>Dashboard updates via Spring WebSocket + STOMP. All role views refresh without page reload when any state change occurs.</p></div>
+    <div class="annot g"><h4>Role-Filtered KPIs</h4><p>Stakeholders see high-level summary only. DevOps sees deploy queue count. Release Mgr sees pending approvals prominently.</p></div>
+    <div class="annot a"><h4>API Calls</h4><p>GET /api/v1/dashboard/stats · GET /api/v1/dashboard/calendar?from=&to= · WS subscribe to /topic/releases</p></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- SCREEN 3: RELEASE LIST -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">
+    <div class="sec-num">SCREEN 03</div>
+    <div><div class="sec-title">Release List</div><div class="sec-desc">All change requests · Filter/sort · Role-based action buttons · CSV export</div></div>
+    <div class="sec-role">All Roles</div>
+  </div>
+  <div class="browser">
+    <div class="bar"><div class="dots"><span class="dr"></span><span class="dy"></span><span class="dg"></span></div><div class="url">NBReleaseOrchestrator.io/releases?status=PENDING_REVIEW&env=production</div></div>
+    <div class="wire-note"><span>GET /api/v1/releases?page=0&size=20&status=PENDING_REVIEW&environment=production</span><span class="dim">Filter Bar · Paginated Table · CSV Export</span></div>
+    <div class="app">
+      <div class="sb">
+        <div class="sb-logo"><div class="logo-n">NBReleaseOrchestrator</div><div class="logo-s">Release Portal</div></div>
+        <div class="sb-user"><div class="av">SK</div><div><div class="un">Sarah K.</div><div class="ur">DevOps Engineer</div></div></div>
+        <div class="sb-nav">
+          <div class="ni"><span class="ni-ico">⊞</span>Dashboard</div>
+          <div class="ni on"><span class="ni-ico">📋</span>Releases <span class="nbadge">12</span></div>
+          <div class="ni"><span class="ni-ico">🚀</span>Deploy Queue <span class="nbadge">2</span></div>
+          <div class="ni"><span class="ni-ico">🔍</span>Audit Logs</div>
+        </div>
+      </div>
+      <div class="main">
+        <div class="topbar">
+          <div><div class="tb-title">All Releases</div><div class="tb-bc">24 total · 3 pending approval</div></div>
+          <div class="tb-actions"><button class="btn bs sm">⬇ Export CSV</button><button class="btn bp sm">+ New Release</button></div>
+        </div>
+        <div class="fbar">
+          <input class="srch" placeholder="🔍  Search by ticket, title, service...">
+          <select class="fsel"><option>All Statuses</option><option selected>Pending Review</option></select>
+          <select class="fsel"><option>All Types</option><option>Major</option><option>Hotfix</option></select>
+          <select class="fsel"><option selected>Production</option><option>Staging</option></select>
+          <select class="fsel"><option>Any Date</option><option>This Week</option></select>
+          <button class="btn bo sm">Clear</button>
+        </div>
+        <div class="content" style="padding:0;">
+          <table class="rt">
+            <thead><tr><th>Ticket</th><th>Title / Services</th><th>Type</th><th>Env</th><th>Status</th><th>Scheduled</th><th>DevOps</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="tkey">PROJ-1248</span></td>
+                <td><div style="font-size:12px;font-weight:600;color:var(--text);">Payment API v3.1 — PCI<div style="font-size:10px;color:var(--g4);font-weight:400;">payment-svc, gateway-svc</div></div></td>
+                <td><span style="font-size:10px;color:var(--red);font-weight:700;">🔴 Major</span></td>
+                <td><span class="env ep">PROD</span></td>
+                <td><span class="badge b-pend">Pending</span></td>
+                <td style="font-size:11px;">Aug 6 18:00</td><td style="font-size:11px;color:var(--g5);">Sarah K.</td>
+                <td><div class="abts"><button class="btn bp sm">View</button></div></td>
+              </tr>
+              <tr>
+                <td><span class="tkey">PROJ-1247</span></td>
+                <td><div style="font-size:12px;font-weight:600;color:var(--text);">Inventory Service v2.0<div style="font-size:10px;color:var(--g4);font-weight:400;">inventory-svc, reporting-svc</div></div></td>
+                <td><span style="font-size:10px;color:var(--amber);font-weight:700;">🟠 Major</span></td>
+                <td><span class="env ep">PROD</span></td>
+                <td><span class="badge b-cab">CAB Review</span></td>
+                <td style="font-size:11px;">Aug 8 02:00</td><td style="font-size:11px;color:var(--g5);">Mike T.</td>
+                <td><div class="abts"><button class="btn bp sm">View</button></div></td>
+              </tr>
+              <tr>
+                <td><span class="tkey">PROJ-1251</span></td>
+                <td><div style="font-size:12px;font-weight:600;color:var(--text);">Auth Service Hotfix<div style="font-size:10px;color:var(--g4);font-weight:400;">auth-service</div></div></td>
+                <td><span style="font-size:10px;color:var(--blue2);font-weight:700;">🔵 Hotfix</span></td>
+                <td><span class="env ep">PROD</span></td>
+                <td><span class="badge b-appr">Approved</span></td>
+                <td style="font-size:11px;">Aug 8 21:00</td><td style="font-size:11px;color:var(--g5);">Sarah K.</td>
+                <td><div class="abts"><button class="btn bg sm">Initiate</button><button class="btn bs sm">View</button></div></td>
+              </tr>
+              <tr>
+                <td><span class="tkey">PROJ-1241</span></td>
+                <td><div style="font-size:12px;font-weight:600;color:var(--text);">User Profile GDPR Compliance<div style="font-size:10px;color:var(--g4);font-weight:400;">user-svc, profile-svc, audit-svc</div></div></td>
+                <td><span style="font-size:10px;color:var(--teal);font-weight:700;">🟡 Minor</span></td>
+                <td><span class="env ep">PROD</span></td>
+                <td><span class="badge b-prog">Deploying</span></td>
+                <td style="font-size:11px;">Aug 5 23:00</td><td style="font-size:11px;color:var(--g5);">Sarah K.</td>
+                <td><div class="abts"><button class="btn br sm">Rollback</button><button class="btn bs sm">View</button></div></td>
+              </tr>
+              <tr>
+                <td><span class="tkey">PROJ-1239</span></td>
+                <td><div style="font-size:12px;font-weight:600;color:var(--text);">Notification Service v1.5<div style="font-size:10px;color:var(--g4);font-weight:400;">notification-svc</div></div></td>
+                <td><span style="font-size:10px;color:var(--teal);font-weight:700;">🟡 Minor</span></td>
+                <td><span class="env es">STAGING</span></td>
+                <td><span class="badge b-depl">Deployed</span></td>
+                <td style="font-size:11px;">Aug 3 15:00</td><td style="font-size:11px;color:var(--g5);">Mike T.</td>
+                <td><div class="abts"><button class="btn bs sm">View</button></div></td>
+              </tr>
+            </tbody>
+          </table>
+          <div style="padding:12px 16px;display:flex;align-items:center;gap:8px;border-top:1px solid var(--g3);font-size:11px;color:var(--g4);">
+            Showing 1–5 of 24
+            <div style="margin-left:auto;display:flex;gap:5px;">
+              <button class="btn bs sm">← Prev</button><button class="btn bp sm">1</button><button class="btn bs sm">2</button><button class="btn bs sm">3</button><button class="btn bs sm">Next →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="annots">
+    <div class="annot"><h4>Role-based Action Buttons</h4><p>DevOps sees "Initiate" on APPROVED tickets. Release Mgr sees "Approve" on PENDING. Dev Team sees "View" only. React hides buttons by role from JWT.</p></div>
+    <div class="annot g"><h4>Server-side Filtering</h4><p>Filters translate to Spring Data JPA Specification predicates. @RequestParam: status, environment, releaseType, startDate, endDate, assigneeId.</p></div>
+    <div class="annot a"><h4>CSV Export</h4><p>GET /api/v1/releases/export — returns Content-Type: text/csv. Restricted to ROLE_SCRUM_MASTER and ROLE_RELEASE_MANAGER via @PreAuthorize.</p></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- SCREEN 4: RELEASE DETAIL -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">
+    <div class="sec-num">SCREEN 04</div>
+    <div><div class="sec-title">Release Detail</div><div class="sec-desc">4-tab view: Overview · Approvals · Deployment Steps · Audit Trail</div></div>
+    <div class="sec-role">All Roles · Tabs filtered by role</div>
+  </div>
+  <div class="browser">
+    <div class="bar"><div class="dots"><span class="dr"></span><span class="dy"></span><span class="dg"></span></div><div class="url">NBReleaseOrchestrator.io/releases/PROJ-1248</div></div>
+    <div class="wire-note"><span>GET /api/v1/releases/{id} · GET /api/v1/releases/{id}/audit · POST /api/v1/approvals/{id}</span><span class="dim">Hero Banner · Tabs · Field Grid · Approval Actions</span></div>
+    <div class="app">
+      <div class="sb">
+        <div class="sb-logo"><div class="logo-n">NBReleaseOrchestrator</div><div class="logo-s">Release Portal</div></div>
+        <div class="sb-user"><div class="av">JR</div><div><div class="un">James R.</div><div class="ur">Release Manager</div></div></div>
+        <div class="sb-nav">
+          <div class="ni"><span class="ni-ico">⊞</span>Dashboard</div>
+          <div class="ni on"><span class="ni-ico">📋</span>Releases</div>
+          <div class="ni"><span class="ni-ico">✓</span>Approvals <span class="nbadge">3</span></div>
+        </div>
+      </div>
+      <div class="main" style="overflow-y:auto;">
+        <div class="d-hero">
+          <div style="flex:1;">
+            <div class="d-key">PROJ-1248 · Release Change Request</div>
+            <div class="d-title">Payment API v3.1 — PCI Compliance Updates</div>
+            <div class="d-meta">
+              <div class="dm-item"><strong>Type</strong> Major</div>
+              <div class="dm-item"><strong>Env</strong> Production</div>
+              <div class="dm-item"><strong>Scheduled</strong> Aug 6 · 18:00 UTC</div>
+              <div class="dm-item"><strong>DevOps</strong> Sarah K.</div>
+              <div class="dm-item"><strong>Rel.Mgr</strong> James R.</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:7px;align-items:flex-end;">
+            <span class="badge b-pend" style="font-size:12px;padding:5px 12px;">⏳ Pending Review</span>
+            <button class="btn bg sm" style="font-size:12px;padding:7px 14px;">✓ Approve Release</button>
+            <button class="btn br sm">✗ Reject</button>
+          </div>
+        </div>
+        <div class="tabs">
+          <div class="tab on">📋 Overview</div>
+          <div class="tab">✓ Approvals (1/2)</div>
+          <div class="tab">🚀 Deployment Steps</div>
+          <div class="tab">🔍 Audit Trail (5)</div>
+        </div>
+        <div class="tab-c">
+          <div class="fg">
+            <div class="fi"><div class="fl">Jira Ticket Key</div><div class="fv" style="font-family:'DM Mono',monospace;color:var(--blue2);">PROJ-1248</div></div>
+            <div class="fi"><div class="fl">Release Type</div><div class="fv">🔴 Major</div></div>
+            <div class="fi"><div class="fl">Target Environment</div><div class="fv"><span class="env ep">PRODUCTION</span></div></div>
+            <div class="fi"><div class="fl">Scheduled Date</div><div class="fv">Aug 6, 2025 · 18:00 UTC</div></div>
+            <div class="fi" style="grid-column:1/-1;">
+              <div class="fl">Services Impacted</div>
+              <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:4px;">
+                <span style="background:var(--accent);color:var(--blue2);padding:2px 9px;border-radius:4px;font-size:11px;font-weight:600;">payment-service</span>
+                <span style="background:var(--accent);color:var(--blue2);padding:2px 9px;border-radius:4px;font-size:11px;font-weight:600;">gateway-service</span>
+                <span style="background:var(--accent);color:var(--blue2);padding:2px 9px;border-radius:4px;font-size:11px;font-weight:600;">fraud-detection</span>
+              </div>
+            </div>
+            <div class="fi"><div class="fl">DevOps Assignee</div><div class="fv">Sarah K.</div></div>
+            <div class="fi"><div class="fl">Release Manager</div><div class="fv">James R.</div></div>
+            <div class="fi" style="grid-column:1/-1;">
+              <div class="fl">Pre-Release Checklist</div>
+              <div style="margin-top:5px;display:flex;flex-direction:column;gap:4px;">
+                <div style="font-size:11px;color:var(--text2);">✅ Code review completed by 2+ reviewers</div>
+                <div style="font-size:11px;color:var(--text2);">✅ All unit & integration tests passing (CI green)</div>
+                <div style="font-size:11px;color:var(--text2);">✅ Staging deployment verified by QA</div>
+                <div style="font-size:11px;color:var(--amber);">⏳ Security scan — in progress</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="annots">
+    <div class="annot"><h4>Approve/Reject Panel</h4><p>POST /api/v1/approvals/{id} with {decision:"APPROVED", reason:""}. Triggers Spring @EventListener → NotificationService → email + WebSocket push.</p></div>
+    <div class="annot g"><h4>4 Tabs Architecture</h4><p>Overview = release entity. Approvals = approvals table. Deployment = runbook fields. Audit = /audit endpoint (audit_logs table). Tabs visible by role.</p></div>
+    <div class="annot a"><h4>Request Changes Flow</h4><p>Release Mgr can add a comment that syncs back to Jira via JiraService.addComment(). Status stays PENDING_REVIEW. Dev team sees comment in both Jira and portal.</p></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- SCREEN 5: DEVOPS DEPLOY QUEUE -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">
+    <div class="sec-num">SCREEN 05</div>
+    <div><div class="sec-title">DevOps Deploy Queue</div><div class="sec-desc">Approved tickets ready for deployment · Priority order · Initiate · Rollback</div></div>
+    <div class="sec-role">DevOps Only</div>
+  </div>
+  <div class="browser">
+    <div class="bar"><div class="dots"><span class="dr"></span><span class="dy"></span><span class="dg"></span></div><div class="url">NBReleaseOrchestrator.io/deploy-queue</div></div>
+    <div class="wire-note"><span>GET /api/v1/releases?status=APPROVED · POST /api/v1/releases/{id}/initiate · POST /api/v1/releases/{id}/rollback</span><span class="dim">Priority Cards · Live Banner · Initiate Modal</span></div>
+    <div class="app">
+      <div class="sb">
+        <div class="sb-logo"><div class="logo-n">NBReleaseOrchestrator</div><div class="logo-s">Release Portal</div></div>
+        <div class="sb-user"><div class="av">SK</div><div><div class="un">Sarah K.</div><div class="ur">DevOps Engineer</div></div></div>
+        <div class="sb-nav">
+          <div class="ni"><span class="ni-ico">⊞</span>Dashboard</div>
+          <div class="ni"><span class="ni-ico">📋</span>Releases</div>
+          <div class="ni on"><span class="ni-ico">🚀</span>Deploy Queue <span class="nbadge">2</span></div>
+          <div class="ni"><span class="ni-ico">🔍</span>Audit Logs</div>
+        </div>
+      </div>
+      <div class="main">
+        <div class="topbar"><div><div class="tb-title">Deploy Queue</div><div class="tb-bc">2 releases approved · ready to deploy</div></div></div>
+        <div class="content">
+          <!-- Live banner -->
+          <div style="background:linear-gradient(90deg,var(--teal),#0D9488);color:#fff;border-radius:var(--r);padding:12px 18px;margin-bottom:14px;display:flex;align-items:center;gap:12px;">
+            <div style="width:9px;height:9px;border-radius:50%;background:#34D399;box-shadow:0 0 10px #34D399;animation:blink 1s infinite;flex-shrink:0;"></div>
+            <div style="flex:1;"><div style="font-size:13px;font-weight:700;">PROJ-1241 — DEPLOYMENT IN PROGRESS</div><div style="font-size:11px;opacity:.8;margin-top:1px;">User Profile GDPR · Started 12 min ago</div></div>
+            <div style="background:rgba(255,255,255,.15);border-radius:7px;padding:7px 14px;text-align:center;"><div style="font-size:20px;font-weight:700;">67%</div><div style="font-size:10px;opacity:.7;">Progress</div></div>
+            <button class="btn br sm">⚠ Rollback</button>
+          </div>
+          <!-- Queue card 1 -->
+          <div class="dq-card">
+            <div class="dq-top">
+              <div class="pbar ph"></div>
+              <div style="flex:1;">
+                <div style="display:flex;align-items:center;gap:8px;"><span class="tkey">PROJ-1251</span><span class="badge b-appr">Approved</span><span style="font-size:9px;background:#FEE2E2;color:#B91C1C;padding:1px 7px;border-radius:4px;font-weight:700;">HIGH PRIORITY</span></div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-top:3px;">Auth Service Hotfix — Token Expiry Bug</div>
+              </div>
+              <div style="text-align:right;"><div style="font-size:10px;color:var(--g4);">Scheduled</div><div style="font-size:12px;font-weight:700;color:var(--amber);">Aug 8 · 21:00</div></div>
+            </div>
+            <div class="dq-body">
+              <div class="dm"><strong>Type</strong>Hotfix</div>
+              <div class="dm"><strong>Environment</strong>Production</div>
+              <div class="dm"><strong>Services</strong>auth-service</div>
+              <div class="dm"><strong>Approved By</strong>James R.</div>
+              <div class="dm"><strong>Approved At</strong>Today 09:42</div>
+            </div>
+            <div class="dq-acts"><button class="btn bg">🚀 Initiate Deployment</button><button class="btn bo sm">📋 Runbook</button><button class="btn bs sm">Details</button></div>
+          </div>
+          <!-- Queue card 2 -->
+          <div class="dq-card">
+            <div class="dq-top">
+              <div class="pbar pm"></div>
+              <div style="flex:1;">
+                <div style="display:flex;align-items:center;gap:8px;"><span class="tkey">PROJ-1255</span><span class="badge b-appr">Approved</span></div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-top:3px;">Inventory Service v2.0 — Schema Migration</div>
+              </div>
+              <div style="text-align:right;"><div style="font-size:10px;color:var(--g4);">Scheduled</div><div style="font-size:12px;font-weight:700;color:var(--text);">Aug 10 · 02:00</div></div>
+            </div>
+            <div class="dq-body">
+              <div class="dm"><strong>Type</strong>Major</div>
+              <div class="dm"><strong>Environment</strong>Production</div>
+              <div class="dm"><strong>Services</strong>inventory-svc, reporting-svc</div>
+              <div class="dm"><strong>Approved By</strong>CAB + James R.</div>
+            </div>
+            <div class="dq-acts"><button class="btn bg">🚀 Initiate Deployment</button><button class="btn bo sm">📋 Runbook</button><button class="btn bs sm">Details</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="annots">
+    <div class="annot"><h4>Initiate Deployment</h4><p>POST /api/v1/releases/{id}/initiate — validates status=APPROVED, transitions to IN_PROGRESS, publishes Spring ApplicationEvent → all stakeholders notified via WebSocket + email.</p></div>
+    <div class="annot g"><h4>Live Progress Updates</h4><p>DevOps manually updates deployment step progress via PATCH /api/v1/releases/{id}/status. WebSocket pushes progress % to all connected dashboards in real-time.</p></div>
+    <div class="annot a"><h4>Rollback Guard</h4><p>Rollback button only active during IN_PROGRESS state. Confirmation modal requires a rollback reason (mandatory). Reason stored in audit_logs.notes field.</p></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- SCREEN 6: AUDIT TRAIL -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">
+    <div class="sec-num">SCREEN 06</div>
+    <div><div class="sec-title">Audit Trail</div><div class="sec-desc">Immutable event timeline · Actor · Timestamp · State diff · Source (Portal vs Jira)</div></div>
+    <div class="sec-role">All Roles</div>
+  </div>
+  <div class="browser">
+    <div class="bar"><div class="dots"><span class="dr"></span><span class="dy"></span><span class="dg"></span></div><div class="url">NBReleaseOrchestrator.io/releases/PROJ-1248/audit</div></div>
+    <div class="wire-note"><span>GET /api/v1/releases/{id}/audit — reads from audit_logs table (INSERT-only, @EventListener)</span><span class="dim">Timeline · State Diff · Filter by Action</span></div>
+    <div class="app" style="height:auto;min-height:480px;">
+      <div class="sb" style="min-height:480px;">
+        <div class="sb-logo"><div class="logo-n">NBReleaseOrchestrator</div><div class="logo-s">Release Portal</div></div>
+        <div class="sb-user"><div class="av">JR</div><div><div class="un">James R.</div><div class="ur">Release Manager</div></div></div>
+        <div class="sb-nav"><div class="ni"><span class="ni-ico">📋</span>Releases</div><div class="ni on"><span class="ni-ico">🔍</span>Audit Logs</div></div>
+      </div>
+      <div class="main">
+        <div class="topbar">
+          <div><div class="tb-title">Audit Trail — PROJ-1248</div><div class="tb-bc">Payment API v3.1 · 5 events</div></div>
+          <div class="tb-actions"><select class="fsel" style="font-size:11px;">All Actions</select><button class="btn bs sm">⬇ Export</button></div>
+        </div>
+        <div class="content">
+          <div class="tl">
+            <div class="tli"><div class="tl-dot" style="background:var(--green);"></div>
+              <div class="tl-card"><div style="display:flex;align-items:center;justify-content:space-between;"><div class="tl-act">✅ Release Approved</div><div style="font-size:10px;color:var(--g4);">Aug 5, 2025 · 14:32:07 UTC</div></div>
+              <div class="tl-sub">Status: PENDING_REVIEW → APPROVED</div>
+              <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">
+                <span style="background:var(--accent);border-radius:4px;padding:2px 8px;font-size:10px;color:var(--blue2);font-weight:600;">Actor: James R. (Release Manager)</span>
+                <span style="background:var(--grn-lt);border-radius:4px;padding:2px 8px;font-size:10px;color:var(--green);font-weight:600;">Source: PORTAL</span>
+              </div></div>
+            </div>
+            <div class="tli"><div class="tl-dot" style="background:var(--blue2);"></div>
+              <div class="tl-card"><div style="display:flex;align-items:center;justify-content:space-between;"><div class="tl-act">📋 Submitted for Review</div><div style="font-size:10px;color:var(--g4);">Aug 5, 2025 · 11:15:43 UTC</div></div>
+              <div class="tl-sub">Status: DRAFT → PENDING_REVIEW</div>
+              <div style="display:flex;gap:6px;margin-top:6px;">
+                <span style="background:var(--accent);border-radius:4px;padding:2px 8px;font-size:10px;color:var(--blue2);font-weight:600;">Actor: Raj P. (Dev Team)</span>
+                <span style="background:var(--amb-lt);border-radius:4px;padding:2px 8px;font-size:10px;color:var(--amber);font-weight:600;">Source: JIRA_WEBHOOK</span>
+              </div></div>
+            </div>
+            <div class="tli"><div class="tl-dot" style="background:var(--amber);"></div>
+              <div class="tl-card"><div style="display:flex;align-items:center;justify-content:space-between;"><div class="tl-act">📝 Rollback Plan Added</div><div style="font-size:10px;color:var(--g4);">Aug 4, 2025 · 16:48:22 UTC</div></div>
+              <div class="tl-sub">customfield_10206 updated via Jira webhook sync</div>
+              <div style="display:flex;gap:6px;margin-top:6px;">
+                <span style="background:var(--amb-lt);border-radius:4px;padding:2px 8px;font-size:10px;color:var(--amber);font-weight:600;">Source: JIRA_WEBHOOK</span>
+              </div></div>
+            </div>
+            <div class="tli"><div class="tl-dot" style="background:var(--g4);"></div>
+              <div class="tl-card"><div style="display:flex;align-items:center;justify-content:space-between;"><div class="tl-act">🆕 Ticket Created & Synced</div><div style="font-size:10px;color:var(--g4);">Aug 3, 2025 · 09:22:11 UTC</div></div>
+              <div class="tl-sub">Release Change Request PROJ-1248 synced from Jira — jira:issue_created webhook event</div>
+              <div style="display:flex;gap:6px;margin-top:6px;">
+                <span style="background:var(--amb-lt);border-radius:4px;padding:2px 8px;font-size:10px;color:var(--amber);font-weight:600;">Source: JIRA_WEBHOOK</span>
+              </div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="annots">
+    <div class="annot"><h4>INSERT-Only Table</h4><p>audit_logs is never UPDATEd or DELETEd. Written exclusively by AuditService @EventListener. No JPA update operations permitted on this entity.</p></div>
+    <div class="annot g"><h4>Dual Source Tracking</h4><p>Every log entry records SOURCE: PORTAL (action taken in NBReleaseOrchestrator) or JIRA_WEBHOOK (change came from Jira). Enables full cross-system traceability.</p></div>
+    <div class="annot a"><h4>Compliance</h4><p>Full audit trail supports SOX, PCI-DSS, and ISO 27001 change management requirements. Old/new state stored as JSONB for complete before/after diff.</p></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- SCREEN 7: NOTIFICATIONS -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">
+    <div class="sec-num">SCREEN 07</div>
+    <div><div class="sec-title">Notifications Panel</div><div class="sec-desc">Real-time push · Role-filtered · Email + WebSocket (STOMP) · Deep links</div></div>
+    <div class="sec-role">All Roles</div>
+  </div>
+  <div class="browser">
+    <div class="bar"><div class="dots"><span class="dr"></span><span class="dy"></span><span class="dg"></span></div><div class="url">NBReleaseOrchestrator.io/dashboard (notification panel open)</div></div>
+    <div class="wire-note"><span>Spring ApplicationEvent → @Async NotificationService → JavaMail + STOMP /user/queue/notifications</span><span class="dim">Dropdown · Unread Count · Mark All Read · Deep Link</span></div>
+    <div class="app" style="height:auto;min-height:440px;position:relative;">
+      <div class="sb" style="min-height:440px;">
+        <div class="sb-logo"><div class="logo-n">NBReleaseOrchestrator</div><div class="logo-s">Release Portal</div></div>
+        <div class="sb-user"><div class="av">JR</div><div><div class="un">James R.</div><div class="ur">Release Manager</div></div></div>
+      </div>
+      <div class="main" style="position:relative;">
+        <div class="topbar">
+          <div><div class="tb-title">Dashboard</div></div>
+          <div class="tb-actions">
+            <button class="btn bs sm" style="position:relative;">🔔<span style="position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;border-radius:50%;width:15px;height:15px;font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:700;">3</span></button>
+          </div>
+        </div>
+        <!-- Notification dropdown -->
+        <div style="position:absolute;top:50px;right:10px;width:300px;background:#fff;border-radius:12px;box-shadow:var(--shadow2);border:1px solid var(--g3);z-index:10;">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--g3);display:flex;align-items:center;">
+            <span style="font-size:13px;font-weight:700;color:var(--navy);">Notifications</span>
+            <span style="background:var(--red);color:#fff;border-radius:100px;padding:1px 7px;font-size:10px;margin-left:7px;">3 new</span>
+            <span style="margin-left:auto;font-size:11px;color:var(--blue2);cursor:pointer;font-weight:600;">Mark all read</span>
+          </div>
+          <div style="padding:10px 16px;border-bottom:1px solid var(--g3);display:flex;gap:10px;align-items:flex-start;">
+            <div style="width:7px;height:7px;border-radius:50%;background:var(--blue2);flex-shrink:0;margin-top:5px;"></div>
+            <div style="width:30px;height:30px;border-radius:7px;background:var(--grn-lt);display:flex;align-items:center;justify-content:center;flex-shrink:0;">✅</div>
+            <div style="flex:1;"><div style="font-size:11px;color:var(--text2);line-height:1.4;"><strong>PROJ-1241 Deployed</strong> User Profile Service is live in production.</div><div style="font-size:10px;color:var(--g4);margin-top:2px;">2 min ago · WebSocket</div></div>
+          </div>
+          <div style="padding:10px 16px;border-bottom:1px solid var(--g3);display:flex;gap:10px;align-items:flex-start;">
+            <div style="width:7px;height:7px;border-radius:50%;background:var(--blue2);flex-shrink:0;margin-top:5px;"></div>
+            <div style="width:30px;height:30px;border-radius:7px;background:var(--amb-lt);display:flex;align-items:center;justify-content:center;flex-shrink:0;">⏳</div>
+            <div style="flex:1;"><div style="font-size:11px;color:var(--text2);line-height:1.4;"><strong>PROJ-1248 Needs Your Approval</strong> Payment API v3.1 is pending review.</div><div style="font-size:10px;color:var(--g4);margin-top:2px;">18 min ago · Email + Portal</div></div>
+          </div>
+          <div style="padding:10px 16px;border-bottom:1px solid var(--g3);display:flex;gap:10px;align-items:flex-start;">
+            <div style="width:7px;height:7px;border-radius:50%;background:var(--blue2);flex-shrink:0;margin-top:5px;"></div>
+            <div style="width:30px;height:30px;border-radius:7px;background:var(--red-lt);display:flex;align-items:center;justify-content:center;flex-shrink:0;">🔴</div>
+            <div style="flex:1;"><div style="font-size:11px;color:var(--text2);line-height:1.4;"><strong>PROJ-1244 Rejected</strong> Missing rollback plan — dev team notified.</div><div style="font-size:10px;color:var(--g4);margin-top:2px;">3 hr ago · Email + Portal</div></div>
+          </div>
+          <div style="padding:10px 16px;display:flex;gap:10px;align-items:flex-start;background:var(--g1);">
+            <div style="width:30px;height:30px;border-radius:7px;background:var(--grn-lt);display:flex;align-items:center;justify-content:center;flex-shrink:0;">✅</div>
+            <div style="flex:1;"><div style="font-size:11px;color:var(--g4);line-height:1.4;"><strong>PROJ-1239</strong> Notification Service deployed to staging.</div><div style="font-size:10px;color:var(--g4);margin-top:2px;">Yesterday · 15:22</div></div>
+          </div>
+          <div style="padding:10px 16px;text-align:center;border-top:1px solid var(--g3);"><span style="font-size:12px;color:var(--blue2);cursor:pointer;font-weight:600;">View All Notifications →</span></div>
+        </div>
+        <!-- Blurred background -->
+        <div class="content" style="opacity:.25;">
+          <div class="kpi-row">
+            <div class="kpi blue"><div class="kpi-lbl">Total</div><div class="kpi-val">24</div></div>
+            <div class="kpi amber"><div class="kpi-lbl">Pending</div><div class="kpi-val">3</div></div>
+            <div class="kpi teal"><div class="kpi-lbl">Active</div><div class="kpi-val">1</div></div>
+            <div class="kpi green"><div class="kpi-lbl">Done</div><div class="kpi-val">18</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="annots">
+    <div class="annot"><h4>Two-Channel Delivery</h4><p>Spring ApplicationEvent → @Async @EventListener NotificationService → (1) JavaMailSender SMTP email, (2) SimpMessagingTemplate STOMP push to /user/queue/notifications.</p></div>
+    <div class="annot g"><h4>Role-Filtered Recipients</h4><p>NotificationService queries users by role to build recipient list per event type. DevOps gets deploy events. Stakeholders get high-level summary emails only.</p></div>
+    <div class="annot a"><h4>Delivery Logging</h4><p>Every notification attempt recorded in notifications table (delivered BOOLEAN, error_message if failed). Provides deliverability audit trail for compliance.</p></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     DB SCHEMA DIAGRAM SECTION
+══════════════════════════════════════════════════════════════════════ -->
+<div class="db-section">
+  <div class="db-title">
+    <h2>Database Schema</h2>
+    <p>PostgreSQL 15 · 5 Tables · Full Column Specifications · Indexes · Relationships</p>
+  </div>
+
+  <!-- ── ERD OVERVIEW ──────────────────────────────────────────── -->
+  <div class="erd-overview">
+    <h3>Entity Relationship Diagram</h3>
+    <div class="erd-tables">
+
+      <!-- users -->
+      <div class="erd-table t-users">
+        <div class="erd-table-hdr">👤 users</div>
+        <div class="erd-table-body">
+          <div class="erd-col"><span class="erd-pk">🔑 id</span><span class="erd-col-type">UUID PK</span></div>
+          <div class="erd-divider"></div>
+          <div class="erd-col"><span class="erd-col-name">email</span><span class="erd-col-type">VARCHAR</span></div>
+          <div class="erd-col"><span class="erd-col-name">password_hash</span><span class="erd-col-type">VARCHAR</span></div>
+          <div class="erd-col"><span class="erd-col-name">full_name</span><span class="erd-col-type">VARCHAR</span></div>
+          <div class="erd-col"><span class="erd-col-name">role</span><span class="erd-col-type">VARCHAR</span></div>
+          <div class="erd-col"><span class="erd-col-name">team</span><span class="erd-col-type">VARCHAR</span></div>
+          <div class="erd-col"><span class="erd-col-name">is_active</span><span class="erd-col-type">BOOLEAN</span></div>
+          <div class="erd-col"><span class="erd-col-name">created_at</span><span class="erd-col-type">TIMESTAMPTZ</span></div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;color:#475569;font-size:20px;gap:4px;padding:0 4px;">
+        <div style="font-size:11px;color:#334155;text-align:center;">1</div>
+        <div>────</div>
+        <div style="font-size:11px;color:#334155;">∞</div>
+      </div>
+
+      <!-- releases -->
+      <div class="erd-table t-releases">
+        <div class="erd-table-hdr">📋 releases</div>
+        <div class="erd-table-body">
+          <div class="erd-col"><span class="erd-pk">🔑 id</span><span class="erd-col-type">UUID PK</span></div>
+          <div class="erd-divider"></div>
+          <div class="erd-col"><span class="erd-col-name">jira_ticket_key</span><span class="erd-col-type">VARCHAR UQ</span></div>
+          <div class="erd-col"><span class="erd-col-name">title</span><span class="erd-col-type">VARCHAR</span></div>
+          <div class="erd-col"><span class="erd-col-name">status</span><span class="erd-col-type">VARCHAR</span></div>
+          <div class="erd-col"><span class="erd-col-name">release_type</span><span class="erd-col-type">VARCHAR</span></div>
+          <div class="erd-col"><span class="erd-col-name">target_environment</span><span class="erd-col-type">VARCHAR</span></div>
+          <div class="erd-col"><span class="erd-col-name">scheduled_date</span><span class="erd-col-type">TIMESTAMPTZ</span></div>
+          <div class="erd-col"><span class="erd-fk">🔗 devops_assignee_id</span><span class="erd-col-type">UUID FK</span></div>
+          <div class="erd-col"><span class="erd-fk">🔗 release_manager_id</span><span class="erd-col-type">UUID FK</span></div>
+          <div class="erd-col"><span class="erd-col-name">raw_jira_payload</span><span class="erd-col-type">JSONB</span></div>
+          <div class="erd-col"><span class="erd-col-name">created_at</span><span class="erd-col-type">TIMESTAMPTZ</span></div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;color:#475569;font-size:20px;gap:4px;padding:0 4px;">
+        <div style="font-size:11px;color:#334155;">1</div>
+        <div>────</div>
+        <div style="font-size:11px;color:#334155;">∞</div>
+      </div>
+
+      <!-- column 3: approvals, audit_logs, notifications -->
+      <div style="display:flex;flex-direction:column;gap:12px;">
+
+        <!-- approvals -->
+        <div class="erd-table t-approvals">
+          <div class="erd-table-hdr">✓ approvals</div>
+          <div class="erd-table-body">
+            <div class="erd-col"><span class="erd-pk">🔑 id</span><span class="erd-col-type">UUID PK</span></div>
+            <div class="erd-divider"></div>
+            <div class="erd-col"><span class="erd-fk">🔗 release_id</span><span class="erd-col-type">UUID FK</span></div>
+            <div class="erd-col"><span class="erd-fk">🔗 approved_by_id</span><span class="erd-col-type">UUID FK</span></div>
+            <div class="erd-col"><span class="erd-col-name">decision</span><span class="erd-col-type">VARCHAR</span></div>
+            <div class="erd-col"><span class="erd-col-name">reason</span><span class="erd-col-type">TEXT</span></div>
+            <div class="erd-col"><span class="erd-col-name">approval_type</span><span class="erd-col-type">VARCHAR</span></div>
+            <div class="erd-col"><span class="erd-col-name">created_at</span><span class="erd-col-type">TIMESTAMPTZ</span></div>
+          </div>
+        </div>
+
+        <!-- audit_logs -->
+        <div class="erd-table t-audit">
+          <div class="erd-table-hdr">🔍 audit_logs</div>
+          <div class="erd-table-body">
+            <div class="erd-col"><span class="erd-pk">🔑 id</span><span class="erd-col-type">UUID PK</span></div>
+            <div class="erd-divider"></div>
+            <div class="erd-col"><span class="erd-fk">🔗 release_id</span><span class="erd-col-type">UUID FK</span></div>
+            <div class="erd-col"><span class="erd-fk">🔗 actor_id</span><span class="erd-col-type">UUID FK?</span></div>
+            <div class="erd-col"><span class="erd-col-name">actor_label</span><span class="erd-col-type">VARCHAR</span></div>
+            <div class="erd-col"><span class="erd-col-name">action</span><span class="erd-col-type">VARCHAR</span></div>
+            <div class="erd-col"><span class="erd-col-name">source</span><span class="erd-col-type">VARCHAR</span></div>
+            <div class="erd-col"><span class="erd-col-name">old_value / new_value</span><span class="erd-col-type">JSONB</span></div>
+            <div class="erd-col"><span class="erd-col-name">created_at</span><span class="erd-col-type">TIMESTAMPTZ</span></div>
+          </div>
+        </div>
+
+        <!-- notifications -->
+        <div class="erd-table t-notif">
+          <div class="erd-table-hdr">🔔 notifications</div>
+          <div class="erd-table-body">
+            <div class="erd-col"><span class="erd-pk">🔑 id</span><span class="erd-col-type">UUID PK</span></div>
+            <div class="erd-divider"></div>
+            <div class="erd-col"><span class="erd-fk">🔗 release_id</span><span class="erd-col-type">UUID FK</span></div>
+            <div class="erd-col"><span class="erd-col-name">event_type</span><span class="erd-col-type">VARCHAR</span></div>
+            <div class="erd-col"><span class="erd-col-name">channel</span><span class="erd-col-type">VARCHAR</span></div>
+            <div class="erd-col"><span class="erd-col-name">recipient_email</span><span class="erd-col-type">VARCHAR</span></div>
+            <div class="erd-col"><span class="erd-col-name">delivered</span><span class="erd-col-type">BOOLEAN</span></div>
+            <div class="erd-col"><span class="erd-col-name">sent_at</span><span class="erd-col-type">TIMESTAMPTZ</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="erd-rel">
+      <div class="rel-item"><div style="width:8px;height:8px;border-radius:50%;background:#34D399;"></div>🔑 Primary Key</div>
+      <div class="rel-item"><div style="width:8px;height:8px;border-radius:50%;background:#93C5FD;"></div>🔗 Foreign Key</div>
+      <div class="rel-item"><div style="color:#64748B;font-size:13px;">1 ──── ∞</div> One-to-Many</div>
+      <div class="rel-item"><div style="font-family:'DM Mono',monospace;font-size:11px;color:#F87171;">actor_id FK?</div> Nullable FK (webhook events have no actor)</div>
+    </div>
+  </div>
+
+  <!-- ── TABLE: users ───────────────────────────────────────────── -->
+  <div class="schema-block" style="max-width:1100px;margin:0 auto 32px;">
+    <div class="schema-block-hdr" style="background:#064E3B;"><span class="tname" style="color:#34D399;">users</span><span class="tpurp" style="color:#34D399;">Portal user accounts · Roles · Login credentials</span></div>
+    <table class="schema-tbl">
+      <thead><tr><th style="color:#34D399;">Column</th><th style="color:#34D399;">Data Type</th><th style="color:#34D399;">Constraints</th><th style="color:#34D399;">Description</th></tr></thead>
+      <tbody>
+        <tr><td><span class="col-name col-pk">id</span></td><td><span class="col-type" style="color:#FCD34D;">UUID</span></td><td><span class="cbadge c-pk">PK</span><span class="cbadge c-nn">NOT NULL</span><span class="cbadge c-def">DEFAULT gen_random_uuid()</span></td><td class="col-desc">Unique identifier for the user account</td></tr>
+        <tr><td><span class="col-name">email</span></td><td><span class="col-type" style="color:#C084FC;">VARCHAR(255)</span></td><td><span class="cbadge c-uq">UNIQUE</span><span class="cbadge c-nn">NOT NULL</span></td><td class="col-desc">User login email — also used for notification delivery</td></tr>
+        <tr><td><span class="col-name">password_hash</span></td><td><span class="col-type" style="color:#C084FC;">VARCHAR(255)</span></td><td><span class="cbadge c-nn">NOT NULL</span></td><td class="col-desc">bcrypt hashed password (cost factor 12)</td></tr>
+        <tr><td><span class="col-name">full_name</span></td><td><span class="col-type" style="color:#C084FC;">VARCHAR(200)</span></td><td><span class="cbadge c-nn">NOT NULL</span></td><td class="col-desc">Display name shown in portal, audit logs, and notifications</td></tr>
+        <tr><td><span class="col-name">role</span></td><td><span class="col-type" style="color:#C084FC;">VARCHAR(50)</span></td><td><span class="cbadge c-nn">NOT NULL</span><span class="cbadge c-ck">CHECK(role IN (...))</span></td><td class="col-desc">One of: ROLE_DEV, ROLE_CROSS_DEV, ROLE_DEVOPS, ROLE_SCRUM_MASTER, ROLE_PRODUCT_OWNER, ROLE_RELEASE_MANAGER, ROLE_STAKEHOLDER</td></tr>
+        <tr><td><span class="col-name">team</span></td><td><span class="col-type" style="color:#C084FC;">VARCHAR(100)</span></td><td><span class="cbadge c-def">NULLABLE</span></td><td class="col-desc">Team name for filtering in Release Manager view</td></tr>
+        <tr><td><span class="col-name">is_active</span></td><td><span class="col-type" style="color:#93C5FD;">BOOLEAN</span></td><td><span class="cbadge c-nn">NOT NULL</span><span class="cbadge c-def">DEFAULT TRUE</span></td><td class="col-desc">Soft-disable user without deleting account or audit history</td></tr>
+        <tr><td><span class="col-name">last_login_at</span></td><td><span class="col-type" style="color:#F87171;">TIMESTAMPTZ</span></td><td><span class="cbadge c-def">NULLABLE</span></td><td class="col-desc">Timestamp of last successful JWT login</td></tr>
+        <tr><td><span class="col-name">created_at</span></td><td><span class="col-type" style="color:#F87171;">TIMESTAMPTZ</span></td><td><span class="cbadge c-nn">NOT NULL</span><span class="cbadge c-def">DEFAULT NOW()</span></td><td class="col-desc">Account creation timestamp</td></tr>
+        <tr><td><span class="col-name">updated_at</span></td><td><span class="col-type" style="color:#F87171;">TIMESTAMPTZ</span></td><td><span class="cbadge c-nn">NOT NULL</span><span class="cbadge c-def">DEFAULT NOW()</span></td><td class="col-desc">Last profile update — auto-updated via trigger or JPA @LastModifiedDate</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── TABLE: releases ────────────────────────────────────────── -->
+  <div class="schema-block" style="max-width:1100px;margin:0 auto 32px;">
+    <div class="schema-block-hdr" style="background:#1E3A8A;"><span class="tname" style="color:#60A5FA;">releases</span><span class="tpurp" style="color:#60A5FA;">Core release change requests · Synced from Jira</span></div>
+    <table class="schema-tbl">
+      <thead><tr><th style="color:#60A5FA;">Column</th><th style="color:#60A5FA;">Data Type</th><th style="color:#60A5FA;">Constraints</th><th style="color:#60A5FA;">Description</th></tr></thead>
+      <tbody>
+        <tr><td><span class="col-name col-pk">id</span></td><td><span class="col-type" style="color:#FCD34D;">UUID</span></td><td><span class="cbadge c-pk">PK</span><span class="cbadge c-def">DEFAULT gen_random_uuid()</span></td><td class="col-desc">NBReleaseOrchestrator-internal release identifier</td></tr>
+        <tr><td><span class="col-name">jira_ticket_key</span><span class="col-idx-badge">IDX</span></td><td><span class="col-type" style="color:#C084FC;">VARCHAR(50)</span></td><td><span class="cbadge c-uq">UNIQUE</span><span class="cbadge c-nn">NOT NULL</span></td><td class="col-desc">Jira issue key e.g. PROJ-1234 — used for upsert deduplication on webhook events</td></tr>
+        <tr><td><span class="col-name">jira_ticket_id</span></td><td><span class="col-type" style="color:#C084FC;">VARCHAR(50)</span></td><td><span class="cbadge c-uq">UNIQUE</span><span class="cbadge c-nn">NOT NULL</span></td><td class="col-desc">Internal Jira numeric issue ID — used for direct API calls to Jira</td></tr>
+        <tr><td><span class="col-name">title</span></td><td><span class="col-type" style="color:#C084FC;">VARCHAR(500)</span></td><td><span class="cbadge c-nn">NOT NULL</span></td><td class="col-desc">Issue summary text from Jira</td></tr>
+        <tr><td><span class="col-name">description</span></td><td><span class="col-type" style="color:#94A3B8;">TEXT</span></td><td><span class="cbadge c-def">NULLABLE</span></td><td class="col-desc">Long-form release description from Jira issue body</td></tr>
+        <tr><td><span class="col-name">status</span><span class="col-idx-badge">IDX</span></td><td><span class="col-type" style="color:#C084FC;">VARCHAR(50)</span></td><td><span class="cbadge c-nn">NOT NULL</span><span class="cbadge c-def">DEFAULT 'DRAFT'</span><span class="cbadge c-ck">CHECK</span></td><td class="col-desc">One of: DRAFT, PENDING_REVIEW, CAB_REVIEW, APPROVED, IN_PROGRESS, DEPLOYED, VERIFIED, REJECTED, ROLLED_BACK</td></tr>
+        <tr><td><span class="col-name">release_type</span></td><td><span class="col-type" style="color:#C084FC;">VARCHAR(50)</span></td><td><span class="cbadge c-def">NULLABLE</span></td><td class="col-desc">Major / Minor / Hotfix / Rollback — from customfield_10201</td></tr>
+        <tr><td><span class="col-name">target_environment</span></td><td><span class="col-type" style="color:#C084FC;">VARCHAR(50)</span></td><td><span class="cbadge c-def">NULLABLE</span></td><td class="col-desc">production / staging / uat — from customfield_10202</td></tr>
+        <tr><td><span class="col-name">scheduled_date</span><span class="col-idx-badge">IDX</span></td><td><span class="col-type" style="color:#F87171;">TIMESTAMPTZ</span></td><td><span class="cbadge c-def">NULLABLE</span></td><td class="col-desc">Planned deployment datetime in UTC — from customfield_10203</td></tr>
+        <tr><td><span class="col-name">services_impacted</span></td><td><span class="col-type" style="color:#94A3B8;">TEXT</span></td><td><span class="cbadge c-def">NULLABLE</span></td><td class="col-desc">Newline-separated list of microservice names — from customfield_10204</td></tr>
+        <tr><td><span class="col-name">deployment_steps</span></td><td><span class="col-type" style="color:#94A3B8;">TEXT</span></td><td><span class="cbadge c-def">NULLABLE</span></td><td class="col-desc">Full numbered deployment runbook — from customfield_10205</td></tr>
+        <tr><td><span class="col-name">rollback_plan</span></td><td><span class="col-type" style="color:#94A3B8;">TEXT</span></td><td><span class="cbadge c-def">NULLABLE</span></td><td class="col-desc">Step-by-step rollback instructions — from customfield_10206</td></tr>
+        <tr><td><span class="col-name col-fk">devops_assignee_id</span><span class="col-idx-badge">IDX</span></td><td><span class="col-type" style="color:#FCD34D;">UUID</span></td><td><span class="cbadge c-fk">FK → users(id)</span><span class="cbadge c-def">NULLABLE</span></td><td class="col-desc">DevOps engineer responsible for deployment execution</td></tr>
+        <tr><td><span class="col-name col-fk">release_manager_id</span></td><td><span class="col-type" style="color:#FCD34D;">UUID</span></td><td><span class="cbadge c-fk">FK → users(id)</span><span class="cbadge c-def">NULLABLE</span></td><td class="col-desc">Release Manager accountable for this release ticket</td></tr>
+        <tr><td><span class="col-name">cab_approval_status</span></td><td><span class="col-type" style="color:#C084FC;">VARCHAR(50)</span></td><td><span class="cbadge c-def">NULLABLE, DEFAULT 'PENDING'</span></td><td class="col-desc">CAB decision for major releases: PENDING / APPROVED / REJECTED</td></tr>
+        <tr><td><span class="col-name">post_release_notes</span></td><td><span class="col-type" style="color:#94A3B8;">TEXT</span></td><td><span class="cbadge c-def">NULLABLE</span></td><td class="col-desc">Post-deployment observations — filled after DEPLOYED status</td></tr>
+        <tr><td><span class="col-name">raw_jira_payload</span></td><td><span class="col-type" style="color:#34D399;">JSONB</span></td><td><span class="cbadge c-def">NULLABLE</span></td><td class="col-desc">Complete raw Jira webhook payload preserved for debugging and re-sync</td></tr>
+        <tr><td><span class="col-name">created_at</span></td><td><span class="col-type" style="color:#F87171;">TIMESTAMPTZ</span></td><td><span class="cbadge c-nn">NOT NULL</span><span class="cbadge c-def">DEFAULT NOW()</span></td><td class="col-desc">When the release was first synced from Jira</td></tr>
+        <tr><td><span class="col-name">updated_at</span></td><td><span class="col-type" style="color:#F87171;">TIMESTAMPTZ</span></td><td><span class="cbadge c-nn">NOT NULL</span><span class="cbadge c-def">DEFAULT NOW()</span></td><td class="col-desc">Last record update — reflects latest webhook sync or portal action</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── TABLE: approvals ───────────────────────────────────────── -->
+  <div class="schema-block" style="max-width:1100px;margin:0 auto 32px;">
+    <div class="schema-block-hdr" style="background:#3B0764;"><span class="tname" style="color:#C084FC;">approvals</span><span class="tpurp" style="color:#C084FC;">Individual approval/rejection decisions per release</span></div>
+    <table class="schema-tbl">
+      <thead><tr><th style="color:#C084FC;">Column</th><th style="color:#C084FC;">Data Type</th><th style="color:#C084FC;">Constraints</th><th style="color:#C084FC;">Description</th></tr></thead>
+      <tbody>
+        <tr><td><span class="col-name col-pk">id</span></td><td><span class="col-type" style="color:#FCD34D;">UUID</span></td><td><span class="cbadge c-pk">PK</span><span class="cbadge c-def">DEFAULT gen_random_uuid()</span></td><td class="col-desc">Unique identifier for this approval record</td></tr>
+        <tr><td><span class="col-name col-fk">release_id</span><span class="col-idx-badge">IDX</span></td><td><span class="col-type" style="color:#FCD34D;">UUID</span></td><td><span class="cbadge c-fk">FK → releases(id)</span><span class="cbadge c-nn">NOT NULL</span><span class="cbadge c-ck">ON DELETE CASCADE</span></td><td class="col-desc">The release this approval belongs to</td></tr>
+        <tr><td><span class="col-name col-fk">approved_by_id</span></td><td><span class="col-type" style="color:#FCD34D;">UUID</span></td><td><span class="cbadge c-fk">FK → users(id)</span><span class="cbadge c-nn">NOT NULL</span></td><td class="col-desc">Portal user who submitted this approval or rejection</td></tr>
+        <tr><td><span class="col-name">decision</span></td><td><span class="col-type" style="color:#C084FC;">VARCHAR(20)</span></td><td><span class="cbadge c-nn">NOT NULL</span><span class="cbadge c-ck">CHECK(IN ('APPROVED','REJECTED'))</span></td><td class="col-desc">The approval outcome — APPROVED or REJECTED only</td></tr>
+        <tr><td><span class="col-name">reason</span></td><td><span class="col-type" style="color:#94A3B8;">TEXT</span></td><td><span class="cbadge c-def">NULLABLE</span></td><td class="col-desc">Required when decision=REJECTED. Optional for APPROVED. Shown to dev team.</td></tr>
+        <tr><td><span class="col-name">approval_type</span></td><td><span class="col-type" style="color:#C084FC;">VARCHAR(20)</span></td><td><span class="cbadge c-nn">NOT NULL</span><span class="cbadge c-def">DEFAULT 'RELEASE_MANAGER'</span></td><td class="col-desc">RELEASE_MANAGER (direct) or CAB (Change Advisory Board)</td></tr>
+        <tr><td><span class="col-name">created_at</span></td><td><span class="col-type" style="color:#F87171;">TIMESTAMPTZ</span></td><td><span class="cbadge c-nn">NOT NULL</span><span class="cbadge c-def">DEFAULT NOW()</span></td><td class="col-desc">Timestamp when the approval decision was submitted</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── TABLE: audit_logs ──────────────────────────────────────── -->
+  <div class="schema-block" style="max-width:1100px;margin:0 auto 32px;">
+    <div class="schema-block-hdr" style="background:#451A03;"><span class="tname" style="color:#FCD34D;">audit_logs</span><span class="tpurp" style="color:#FCD34D;">Immutable append-only action history · Never updated or deleted</span></div>
+    <table class="schema-tbl">
+      <thead><tr><th style="color:#FCD34D;">Column</th><th style="color:#FCD34D;">Data Type</th><th style="color:#FCD34D;">Constraints</th><th style="color:#FCD34D;">Description</th></tr></thead>
+      <tbody>
+        <tr><td><span class="col-name col-pk">id</span></td><td><span class="col-type" style="color:#FCD34D;">UUID</span></td><td><span class="cbadge c-pk">PK</span><span class="cbadge c-def">DEFAULT gen_random_uuid()</span></td><td class="col-desc">Unique log entry identifier</td></tr>
+        <tr><td><span class="col-name col-fk">release_id</span><span class="col-idx-badge">IDX</span></td><td><span class="col-type" style="color:#FCD34D;">UUID</span></td><td><span class="cbadge c-fk">FK → releases(id)</span><span class="cbadge c-nn">NOT NULL</span></td><td class="col-desc">Which release this audit event belongs to</td></tr>
+        <tr><td><span class="col-name col-fk">actor_id</span></td><td><span class="col-type" style="color:#FCD34D;">UUID</span></td><td><span class="cbadge c-fk">FK → users(id)</span><span class="cbadge c-def">NULLABLE</span></td><td class="col-desc">User who triggered action. NULL for system/webhook-originated events.</td></tr>
+        <tr><td><span class="col-name">actor_label</span></td><td><span class="col-type" style="color:#C084FC;">VARCHAR(100)</span></td><td><span class="cbadge c-nn">NOT NULL</span></td><td class="col-desc">Human-readable actor string e.g. "James R. (Release Manager)" — denormalized for audit display</td></tr>
+        <tr><td><span class="col-name">action</span></td><td><span class="col-type" style="color:#C084FC;">VARCHAR(100)</span></td><td><span class="cbadge c-nn">NOT NULL</span></td><td class="col-desc">Action code: STATUS_CHANGED, APPROVED, REJECTED, DEPLOYED, ROLLED_BACK, FIELD_UPDATED, COMMENT_ADDED</td></tr>
+        <tr><td><span class="col-name">source</span></td><td><span class="col-type" style="color:#C084FC;">VARCHAR(50)</span></td><td><span class="cbadge c-nn">NOT NULL</span><span class="cbadge c-def">DEFAULT 'PORTAL'</span><span class="cbadge c-ck">CHECK(IN ('PORTAL','JIRA_WEBHOOK'))</span></td><td class="col-desc">Origin of action — PORTAL (user action) or JIRA_WEBHOOK (Jira-originated change)</td></tr>
+        <tr><td><span class="col-name">old_value</span></td><td><span class="col-type" style="color:#34D399;">JSONB</span></td><td><span class="cbadge c-def">NULLABLE</span></td><td class="col-desc">Serialized previous state snapshot — JSON object with changed field values</td></tr>
+        <tr><td><span class="col-name">new_value</span></td><td><span class="col-type" style="color:#34D399;">JSONB</span></td><td><span class="cbadge c-def">NULLABLE</span></td><td class="col-desc">Serialized new state snapshot — JSON object with new field values</td></tr>
+        <tr><td><span class="col-name">notes</span></td><td><span class="col-type" style="color:#94A3B8;">TEXT</span></td><td><span class="cbadge c-def">NULLABLE</span></td><td class="col-desc">Free-text annotation — rejection reason, rollback cause, comment text</td></tr>
+        <tr><td><span class="col-name">created_at</span><span class="col-idx-badge">IDX</span></td><td><span class="col-type" style="color:#F87171;">TIMESTAMPTZ</span></td><td><span class="cbadge c-nn">NOT NULL</span><span class="cbadge c-def">DEFAULT NOW()</span></td><td class="col-desc">⚠ IMMUTABLE — never update this column. No UPDATE on audit_logs table ever.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── TABLE: notifications ───────────────────────────────────── -->
+  <div class="schema-block" style="max-width:1100px;margin:0 auto 32px;">
+    <div class="schema-block-hdr" style="background:#450A0A;"><span class="tname" style="color:#F87171;">notifications</span><span class="tpurp" style="color:#F87171;">Notification delivery log · Email + WebSocket</span></div>
+    <table class="schema-tbl">
+      <thead><tr><th style="color:#F87171;">Column</th><th style="color:#F87171;">Data Type</th><th style="color:#F87171;">Constraints</th><th style="color:#F87171;">Description</th></tr></thead>
+      <tbody>
+        <tr><td><span class="col-name col-pk">id</span></td><td><span class="col-type" style="color:#FCD34D;">UUID</span></td><td><span class="cbadge c-pk">PK</span><span class="cbadge c-def">DEFAULT gen_random_uuid()</span></td><td class="col-desc">Unique identifier for this notification delivery attempt</td></tr>
+        <tr><td><span class="col-name col-fk">release_id</span><span class="col-idx-badge">IDX</span></td><td><span class="col-type" style="color:#FCD34D;">UUID</span></td><td><span class="cbadge c-fk">FK → releases(id)</span><span class="cbadge c-nn">NOT NULL</span></td><td class="col-desc">Which release triggered this notification</td></tr>
+        <tr><td><span class="col-name">event_type</span></td><td><span class="col-type" style="color:#C084FC;">VARCHAR(100)</span></td><td><span class="cbadge c-nn">NOT NULL</span></td><td class="col-desc">CREATED, APPROVED, REJECTED, IN_PROGRESS, DEPLOYED, ROLLED_BACK, VERIFIED</td></tr>
+        <tr><td><span class="col-name">channel</span></td><td><span class="col-type" style="color:#C084FC;">VARCHAR(20)</span></td><td><span class="cbadge c-nn">NOT NULL</span><span class="cbadge c-ck">CHECK(IN ('EMAIL','WEBSOCKET'))</span></td><td class="col-desc">Delivery channel used for this notification record</td></tr>
+        <tr><td><span class="col-name">recipient_email</span></td><td><span class="col-type" style="color:#C084FC;">VARCHAR(255)</span></td><td><span class="cbadge c-def">NULLABLE</span></td><td class="col-desc">Recipient address for EMAIL channel. NULL for WEBSOCKET channel.</td></tr>
+        <tr><td><span class="col-name">subject</span></td><td><span class="col-type" style="color:#C084FC;">VARCHAR(500)</span></td><td><span class="cbadge c-def">NULLABLE</span></td><td class="col-desc">Email subject line (EMAIL channel only)</td></tr>
+        <tr><td><span class="col-name">body</span></td><td><span class="col-type" style="color:#94A3B8;">TEXT</span></td><td><span class="cbadge c-def">NULLABLE</span></td><td class="col-desc">Full email body or STOMP WebSocket message JSON payload</td></tr>
+        <tr><td><span class="col-name">delivered</span></td><td><span class="col-type" style="color:#93C5FD;">BOOLEAN</span></td><td><span class="cbadge c-nn">NOT NULL</span><span class="cbadge c-def">DEFAULT FALSE</span></td><td class="col-desc">Set to TRUE after successful delivery confirmation from SMTP or WebSocket</td></tr>
+        <tr><td><span class="col-name">error_message</span></td><td><span class="col-type" style="color:#94A3B8;">TEXT</span></td><td><span class="cbadge c-def">NULLABLE</span></td><td class="col-desc">Populated if delivery failed — SMTP error, connection refused, etc.</td></tr>
+        <tr><td><span class="col-name">sent_at</span></td><td><span class="col-type" style="color:#F87171;">TIMESTAMPTZ</span></td><td><span class="cbadge c-nn">NOT NULL</span><span class="cbadge c-def">DEFAULT NOW()</span></td><td class="col-desc">Timestamp of the notification send attempt</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── INDEXES ────────────────────────────────────────────────── -->
+  <div class="idx-block" style="max-width:1100px;margin:0 auto 0;">
+    <div class="idx-hdr">📈 Database Indexes</div>
+    <table class="idx-tbl">
+      <thead><tr><th style="color:#475569;">Index Name</th><th style="color:#475569;">Table</th><th style="color:#475569;">Column(s)</th><th style="color:#475569;">Type</th><th style="color:#475569;">Reason</th></tr></thead>
+      <tbody>
+        <tr><td><span class="idx-name">idx_releases_status</span></td><td><span class="idx-tname">releases</span></td><td><span class="idx-col">status</span></td><td style="color:#94A3B8;font-size:11px;">B-tree</td><td class="idx-reason">All dashboard queries filter by status — critical for performance</td></tr>
+        <tr><td><span class="idx-name">idx_releases_jira_key</span></td><td><span class="idx-tname">releases</span></td><td><span class="idx-col">jira_ticket_key</span></td><td style="color:#94A3B8;font-size:11px;">B-tree</td><td class="idx-reason">Webhook upsert lookup by Jira key — fires on every webhook event</td></tr>
+        <tr><td><span class="idx-name">idx_releases_scheduled</span></td><td><span class="idx-tname">releases</span></td><td><span class="idx-col">scheduled_date DESC</span></td><td style="color:#94A3B8;font-size:11px;">B-tree</td><td class="idx-reason">Calendar view and deploy queue ordering by upcoming date</td></tr>
+        <tr><td><span class="idx-name">idx_releases_devops</span></td><td><span class="idx-tname">releases</span></td><td><span class="idx-col">devops_assignee_id</span></td><td style="color:#94A3B8;font-size:11px;">B-tree</td><td class="idx-reason">DevOps queue filters releases by assigned engineer</td></tr>
+        <tr><td><span class="idx-name">idx_audit_release_id</span></td><td><span class="idx-tname">audit_logs</span></td><td><span class="idx-col">release_id</span></td><td style="color:#94A3B8;font-size:11px;">B-tree</td><td class="idx-reason">Audit trail page queries all logs for a single release</td></tr>
+        <tr><td><span class="idx-name">idx_audit_created_at</span></td><td><span class="idx-tname">audit_logs</span></td><td><span class="idx-col">created_at DESC</span></td><td style="color:#94A3B8;font-size:11px;">B-tree</td><td class="idx-reason">Chronological ordering — audit timeline always sorted newest first</td></tr>
+        <tr><td><span class="idx-name">idx_approvals_release</span></td><td><span class="idx-tname">approvals</span></td><td><span class="idx-col">release_id</span></td><td style="color:#94A3B8;font-size:11px;">B-tree</td><td class="idx-reason">Approval tab fetches all decisions for a release ticket</td></tr>
+        <tr><td><span class="idx-name">idx_notif_release</span></td><td><span class="idx-tname">notifications</span></td><td><span class="idx-col">release_id</span></td><td style="color:#94A3B8;font-size:11px;">B-tree</td><td class="idx-reason">Notification history lookup per release for admin debugging</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Footer -->
+<div style="background:var(--navy);padding:36px;text-align:center;border-top:3px solid #1D4ED8;">
+  <div style="font-size:30px;font-weight:700;color:#FCD34D;margin-bottom:6px;">NBReleaseOrchestrator</div>
+  <div style="font-size:13px;color:#475569;font-style:italic;margin-bottom:12px;">"Because every deployment is a show. Make yours worth watching."</div>
+  <div style="font-size:11px;color:#334155;">Java 17 · Spring Boot 3.x · PostgreSQL 15 · REST API Only · React.js · Monolithic Architecture · v3.0</div>
+</div>
+
+</body>
+</html>
