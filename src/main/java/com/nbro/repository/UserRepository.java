@@ -2,6 +2,8 @@ package com.nbro.repository;
 
 import com.nbro.domain.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,6 +16,7 @@ import java.util.UUID;
  * Spring Data JPA automatically generates the actual database queries
  * based on the method names we define here.
  */
+@Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
 
     /**
