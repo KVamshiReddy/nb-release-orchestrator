@@ -32,15 +32,15 @@ public class SecurityConfig {
 
     /**
      * Configures Swagger UI to support JWT authentication.
-     *
+     * <p>
      * Without this, Swagger has no idea our API uses tokens —
      * it would just send requests without any Authorization header
      * and every protected endpoint would return 403.
-     *
+     * <p>
      * After adding this, an "Authorize" button appears in Swagger UI.
      * You paste your JWT token there once and Swagger automatically
      * adds "Authorization: Bearer your-token" to every request you make.
-     *
+     * <p>
      * Think of it as teaching Swagger how to talk to our secured API.
      */
     @Bean
@@ -81,7 +81,13 @@ public class SecurityConfig {
                         // /api/v1/auth/** — login page (you can't need a token to log in!)
                         // /swagger-ui/** — API documentation page
                         // /v3/api-docs/** — Swagger technical docs
-                        .requestMatchers("/api/v1/auth/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers(
+                                "/api/v1/auth/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/webjars/**"
+                        ).permitAll()
                         // Every other endpoint requires a valid JWT token
                         .anyRequest().authenticated())
 

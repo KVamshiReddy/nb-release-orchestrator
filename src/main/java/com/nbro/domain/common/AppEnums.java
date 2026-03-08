@@ -15,4 +15,30 @@ public class AppEnums {
         RELEASE_MANAGER,
         STAKEHOLDER
     }
+
+    public enum ReleaseType {
+        MAJOR,
+        MINOR,
+        HOTFIX
+    }
+
+    public enum TargetEnvironment {
+        PRODUCTION,
+        STAGING,
+        DEVELOPMENT
+    }
+
+    public enum ReleaseStatus {
+        DRAFT,
+        PENDING_REVIEW,
+        CAB_REVIEW,
+        APPROVED,
+        IN_PROGRESS,
+        DEPLOYED,
+        VERIFIED,
+        ROLLED_BACK,
+        REJECTED
+    }
+
+
 }
