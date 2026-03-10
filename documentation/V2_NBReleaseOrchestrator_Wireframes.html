@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NBReleaseOrchestrator — Portal Wireframes & DB Schema</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body,#root{height:100%;font-family:'DM Sans',system-ui,sans-serif;}
+body{background:#F8FAFC;}
+.trow:hover td{background:#EFF6FF!important;}
+button:hover{filter:brightness(1.1);}
+button:active{transform:scale(.97);}
+select{cursor:pointer;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:10px;}
+@keyframes fadein{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+@keyframes slidein{from{opacity:0;transform:translateX(-10px);}to{opacity:1;transform:translateX(0);}}
+.screen-enter{animation:slidein .2s ease;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ═══════════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════════
+const ROLES = [
+  { id:"REL_MGR",  label:"Release Mgr",  initials:"JR", name:"James R." },
+  { id:"DEVOPS",   label:"DevOps",   initials:"SK", name:"Sarah K." },
+  { id:"DEV",      label:"Dev Team",          initials:"AT", name:"Aditya T." },
+  { id:"SCR_MST",  label:"Scrum Master",      initials:"PM", name:"Priya M." },
+  { id:"PROD_OWN", label:"Product Owner",     initials:"RK", name:"Rahul K." },
+  { id:"STKHDR",   label:"Stakeholder",       initials:"VC", name:"VP Chandra" },
+];
+
+const STATUS_META = {
+  DRAFT:          { label:"Draft",          bg:"#F1F5F9", color:"#64748B", dot:"#94A3B8" },
+  PENDING_REVIEW: { label:"Pending Review", bg:"#FEF3C7", color:"#B45309", dot:"#B45309" },
+  CAB_REVIEW:     { label:"CAB Review",     bg:"#EDE9FE", color:"#6D28D9", dot:"#6D28D9" },
+  APPROVED:       { label:"Approved",       bg:"#DCFCE7", color:"#15803D", dot:"#15803D" },
+  IN_PROGRESS:    { label:"Deploying",      bg:"#BFDBFE", color:"#1D4ED8", dot:"#1D4ED8" },
+  DEPLOYED:       { label:"Deployed",       bg:"#CCFBF1", color:"#0F766E", dot:"#0F766E" },
+  VERIFIED:       { label:"Verified",       bg:"#DCFCE7", color:"#15803D", dot:"#15803D" },
+  REJECTED:       { label:"Rejected",       bg:"#FEE2E2", color:"#B91C1C", dot:"#B91C1C" },
+  ROLLED_BACK:    { label:"Rolled Back",    bg:"#FEF3C7", color:"#B45309", dot:"#B45309" },
+};
+
+const INIT_RELEASES = [
+  { id:1, key:"RM-45", title:"Payment API v3.1 — PCI Compliance Updates",   type:"Major",  env:"PROD",    status:"PENDING_REVIEW", scheduled:"Aug 6 18:00",  devops:"Sarah K.", manager:"James R.", teams:4, items:7, services:["payment-svc","gateway-svc","fraud-detection"] },
+  { id:2, key:"RM-44", title:"Inventory Service v2.0 Rewrite",               type:"Major",  env:"PROD",    status:"CAB_REVIEW",     scheduled:"Aug 8 02:00",  devops:"Mike T.",  manager:"James R.", teams:2, items:5, services:["inventory-svc","reporting-svc"] },
+  { id:3, key:"RM-46", title:"Auth Service Hotfix — Session Bug",             type:"Hotfix", env:"PROD",    status:"APPROVED",       scheduled:"Aug 8 21:00",  devops:"Sarah K.", manager:"James R.", teams:1, items:2, services:["auth-service"] },
+  { id:4, key:"RM-43", title:"User Profile GDPR Compliance Update",          type:"Minor",  env:"PROD",    status:"IN_PROGRESS",    scheduled:"Aug 5 23:00",  devops:"Sarah K.", manager:"James R.", teams:3, items:6, services:["user-svc","profile-svc","audit-svc"] },
+  { id:5, key:"RM-42", title:"Notification Service v1.5",                    type:"Minor",  env:"STAGING", status:"DEPLOYED",       scheduled:"Aug 3 15:00",  devops:"Mike T.",  manager:"James R.", teams:1, items:3, services:["notification-svc"] },
+  { id:6, key:"RM-41", title:"Search Microservice v3 Migration",             type:"Major",  env:"STAGING", status:"VERIFIED",       scheduled:"Aug 1 10:00",  devops:"Sarah K.", manager:"James R.", teams:2, items:4, services:["search-svc","index-svc"] },
+  { id:7, key:"RM-40", title:"Reporting Dashboard Bug Fixes",                type:"Minor",  env:"UAT",     status:"REJECTED",       scheduled:"Jul 30 14:00", devops:"Mike T.",  manager:"James R.", teams:1, items:2, services:["reporting-svc"] },
+];
+
+const INIT_LINKED = [
+  { id:1, releaseId:1, key:"PAYMENTS-123", summary:"Upgrade PCI DSS tokenisation library to v4.2",        type:"Story", status:"Done",        team:"Payments Team",  linkedBy:"Portal",     linkedAt:"Aug 1 10:22" },
+  { id:2, releaseId:1, key:"PAYMENTS-124", summary:"Update gateway SSL cert rotation logic",               type:"Story", status:"Done",        team:"Payments Team",  linkedBy:"Portal",     linkedAt:"Aug 1 10:25" },
+  { id:3, releaseId:1, key:"PAYMENTS-131", summary:"Fraud detection rule engine v2 — silent mode",        type:"Bug",   status:"In Review",   team:"Payments Team",  linkedBy:"Portal",     linkedAt:"Aug 2 14:10" },
+  { id:4, releaseId:1, key:"AUTH-88",      summary:"OAuth2 token validation hardening",                   type:"Story", status:"Done",        team:"Auth Team",      linkedBy:"JIRA_WEBHOOK",  linkedAt:"Aug 1 09:45" },
+  { id:5, releaseId:1, key:"AUTH-92",      summary:"Session expiry audit logging",                        type:"Task",  status:"In Progress", team:"Auth Team",      linkedBy:"Portal",     linkedAt:"Aug 2 16:00" },
+  { id:6, releaseId:1, key:"FRAUD-55",     summary:"ML model retrain pipeline v2",                        type:"Story", status:"Done",        team:"Fraud Team",     linkedBy:"Portal",     linkedAt:"Aug 1 11:00" },
+  { id:7, releaseId:1, key:"GW-201",       summary:"TLS 1.3 enforcement on gateway",                      type:"Task",  status:"Done",        team:"Gateway Team",   linkedBy:"Portal",     linkedAt:"Aug 1 12:30" },
+  { id:8, releaseId:3, key:"AUTH-95",      summary:"Fix null pointer in session handler",                 type:"Bug",   status:"Done",        team:"Auth Team",      linkedBy:"Portal",     linkedAt:"Aug 7 09:00" },
+  { id:9, releaseId:3, key:"AUTH-96",      summary:"Add session expiry logging",                          type:"Task",  status:"Done",        team:"Auth Team",      linkedBy:"Portal",     linkedAt:"Aug 7 09:10" },
+];
+
+const INIT_AUDIT = [
+  { id:1, releaseId:1, action:"TICKET_CREATED",    actor:"Jira Webhook", detail:"RM-45 created in RM space → synced to portal", source:"JIRA_WEBHOOK",   time:"Aug 1 09:00", color:"#1D4ED8" },
+  { id:2, releaseId:1, action:"LINKED_ITEM_ADDED", actor:"Aditya T.",    detail:"AUTH-88 linked to RM-45",                       source:"PORTAL", time:"Aug 1 09:45", color:"#0F766E" },
+  { id:3, releaseId:1, action:"LINKED_ITEM_ADDED", actor:"Aditya T.",    detail:"PAYMENTS-123 linked to RM-45",                  source:"PORTAL", time:"Aug 1 10:22", color:"#0F766E" },
+  { id:4, releaseId:1, action:"COMMENT_ADDED",     actor:"James R.",     detail:"Awaiting fraud detection sign-off before approval", source:"PORTAL", time:"Aug 2 11:00", color:"#6D28D9" },
+  { id:5, releaseId:1, action:"STATUS_SYNCED",     actor:"System",       detail:"5 linked items confirmed Done in Jira",         source:"JIRA_WEBHOOK",   time:"Aug 3 09:00", color:"#15803D" },
+  { id:6, releaseId:3, action:"TICKET_CREATED",    actor:"Jira Webhook", detail:"RM-46 created in RM space → synced to portal", source:"JIRA_WEBHOOK",   time:"Aug 7 08:00", color:"#1D4ED8" },
+  { id:7, releaseId:3, action:"APPROVED",          actor:"James R.",     detail:"RM-46 approved — DevOps notified",              source:"PORTAL", time:"Aug 7 10:00", color:"#15803D" },
+];
+
+const INIT_NOTIFS = [
+  { id:1, title:"RM-45 needs your approval",    sub:"Payment API v3.1 — 7 items linked, all teams ready",         time:"2m ago",  read:false, color:"#B45309" },
+  { id:2, title:"RM-46 has been approved",      sub:"Auth Service Hotfix — ready for deployment",                  time:"14m ago", read:false, color:"#15803D" },
+  { id:3, title:"RM-43 deployment in progress", sub:"User Profile GDPR — Sarah K. initiated",                     time:"1h ago",  read:true,  color:"#1D4ED8" },
+  { id:4, title:"RM-42 successfully deployed",  sub:"Notification Service v1.5 — Staging env",                    time:"3h ago",  read:true,  color:"#0F766E" },
+  { id:5, title:"RM-39 was rolled back",        sub:"Cart Service v2 — see audit trail for reason",               time:"1d ago",  read:true,  color:"#B91C1C" },
+];
+
+// ═══════════════════════════════════════════════════════════════
+// SMALL COMPONENTS
+// ═══════════════════════════════════════════════════════════════
+function Avatar({ initials, size=30 }) {
+  return <div style={{width:size,height:size,borderRadius:"50%",background:"#1D4ED8",display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*0.37,fontWeight:700,color:"#fff",flexShrink:0}}>{initials}</div>;
+}
+
+function StatusBadge({ status, large, mini }) {
+  const m = STATUS_META[status] || STATUS_META.DRAFT;
+  const pad = mini?"2px 6px":large?"5px 14px":"3px 9px";
+  const fsz = mini?9:large?12:10;
+  return (
+    <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:pad,borderRadius:100,fontSize:fsz,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,background:m.bg,color:m.color,whiteSpace:"nowrap"}}>
+      <span style={{width:mini?4:5,height:mini?4:5,borderRadius:"50%",background:m.dot,flexShrink:0}}/>
+      {m.label}
+    </span>
+  );
+}
+
+function EnvBadge({ env }) {
+  const cfg = {PROD:{bg:"#FEE2E2",color:"#B91C1C"},STAGING:{bg:"#FEF3C7",color:"#B45309"},UAT:{bg:"#EFF6FF",color:"#1D4ED8"}};
+  const c = cfg[env]||cfg.UAT;
+  return <span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:4,textTransform:"uppercase",background:c.bg,color:c.color}}>{env}</span>;
+}
+
+function TypeBadge({ type }) {
+  const color = type==="Major"?"#B91C1C":type==="Hotfix"?"#7C3AED":type==="Minor"?"#0F766E":"#1D4ED8";
+  return <span style={{fontSize:10,fontWeight:700,color}}>{type==="Major"?"🔴":type==="Hotfix"?"🟣":type==="Minor"?"🟢":"🔵"} {type}</span>;
+}
+
+function Btn({ onClick, style={}, children, disabled }) {
+  return <button onClick={onClick} disabled={disabled} style={{display:"inline-flex",alignItems:"center",gap:5,fontFamily:"'DM Sans',sans-serif",cursor:disabled?"not-allowed":"pointer",opacity:disabled?.5:1,borderRadius:6,fontWeight:700,border:"none",...style}}>{children}</button>;
+}
+
+function Tag({ children, color="#1D4ED8", bg="#EFF6FF" }) {
+  return <span style={{background:bg,color,padding:"2px 9px",borderRadius:5,fontSize:11,fontWeight:600}}>{children}</span>;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MODAL SHELL
+// ═══════════════════════════════════════════════════════════════
+function Modal({ title, onClose, children, width=480 }) {
+  return (
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.55)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:500,padding:16}}>
+      <div style={{background:"#fff",borderRadius:14,padding:28,width,maxWidth:"100%",maxHeight:"90vh",overflowY:"auto",boxShadow:"0 24px 64px rgba(0,0,0,.3)",animation:"fadein .2s"}}>
+        <div style={{display:"flex",alignItems:"center",marginBottom:20}}>
+          <div style={{fontWeight:800,fontSize:16,color:"#0A1628"}}>{title}</div>
+          <button onClick={onClose} style={{marginLeft:"auto",background:"none",border:"none",cursor:"pointer",fontSize:20,color:"#94A3B8",lineHeight:1}}>×</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function ConfirmModal({ title, msg, confirmLabel, confirmColor="#1D4ED8", onConfirm, onCancel }) {
+  return (
+    <Modal title={title} onClose={onCancel}>
+      <p style={{fontSize:13,color:"#334155",lineHeight:1.6,marginBottom:22}}>{msg}</p>
+      <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
+        <Btn onClick={onCancel} style={{padding:"7px 14px",fontSize:12,background:"#F1F5F9",color:"#334155"}}>Cancel</Btn>
+        <Btn onClick={onConfirm} style={{padding:"7px 16px",fontSize:12,background:confirmColor,color:"#fff"}}>{confirmLabel}</Btn>
+      </div>
+    </Modal>
+  );
+}
+
+function ReasonModal({ title, placeholder, confirmLabel, confirmColor, onConfirm, onCancel }) {
+  const [reason, setReason] = useState("");
+  return (
+    <Modal title={title} onClose={onCancel}>
+      <textarea value={reason} onChange={e=>setReason(e.target.value)} placeholder={placeholder}
+        style={{width:"100%",minHeight:90,padding:"9px 12px",border:"1.5px solid #E2E8F0",borderRadius:6,fontSize:12,fontFamily:"'DM Sans',sans-serif",resize:"vertical",marginBottom:16,outline:"none"}}/>
+      <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
+        <Btn onClick={onCancel} style={{padding:"7px 14px",fontSize:12,background:"#F1F5F9",color:"#334155"}}>Cancel</Btn>
+        <Btn onClick={()=>reason.trim()&&onConfirm(reason)} disabled={!reason.trim()} style={{padding:"7px 16px",fontSize:12,background:confirmColor,color:"#fff"}}>{confirmLabel}</Btn>
+      </div>
+    </Modal>
+  );
+}
+
+function LinkModal({ onConfirm, onCancel }) {
+  const [key, setKey] = useState("");
+  const [team, setTeam] = useState("Payments Team");
+  return (
+    <Modal title="🔗 Link Ticket to Release" onClose={onCancel}>
+      <div style={{background:"#EFF6FF",border:"1px solid #BFDBFE",borderRadius:8,padding:12,marginBottom:16,fontSize:12,color:"#1D4ED8"}}>
+        Enter a Jira ticket key from <strong>any project space</strong>. The portal creates an "is part of release" link on this RCR via the Jira REST API.
+      </div>
+      <div style={{marginBottom:12}}>
+        <label style={FS.flbl}>Jira Ticket Key</label>
+        <input style={FS.finp} placeholder="e.g. PAYMENTS-135, AUTH-99, CART-201" value={key} onChange={e=>setKey(e.target.value.toUpperCase())}/>
+      </div>
+      <div style={{marginBottom:22}}>
+        <label style={FS.flbl}>Team</label>
+        <select style={FS.finp} value={team} onChange={e=>setTeam(e.target.value)}>
+          {["Payments Team","Auth Team","Gateway Team","Fraud Team","Cart Team","Inventory Team","Dev Team"].map(t=><option key={t}>{t}</option>)}
+        </select>
+      </div>
+      <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
+        <Btn onClick={onCancel} style={{padding:"7px 14px",fontSize:12,background:"#F1F5F9",color:"#334155"}}>Cancel</Btn>
+        <Btn onClick={()=>key.trim()&&onConfirm(key.trim(),team)} disabled={!key.trim()} style={{padding:"7px 16px",fontSize:12,background:"#1D4ED8",color:"#fff"}}>🔗 Link Ticket</Btn>
+      </div>
+    </Modal>
+  );
+}
+
+function NewReleaseModal({ onConfirm, onCancel }) {
+  const [f, setF] = useState({title:"",type:"Major",env:"PROD",scheduled:"",devops:"Sarah K.",services:""});
+  const s = (k,v) => setF(p=>({...p,[k]:v}));
+  return (
+    <Modal title="+ New Release Umbrella Ticket" onClose={onCancel} width={520}>
+      <div style={{background:"#F0FDF4",border:"1px solid #BBF7D0",borderRadius:8,padding:12,marginBottom:16,fontSize:12,color:"#15803D"}}>
+        Creates a new Release Change Request in the <strong>centralized RM Jira space</strong>. Dev teams will link their tickets to this key.
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:4}}>
+        <div style={{gridColumn:"1/-1"}}>
+          <label style={FS.flbl}>Release Title *</label>
+          <input style={FS.finp} placeholder="e.g. Payment API v3.2 — August Release" value={f.title} onChange={e=>s("title",e.target.value)}/>
+        </div>
+        <div>
+          <label style={FS.flbl}>Release Type</label>
+          <select style={FS.finp} value={f.type} onChange={e=>s("type",e.target.value)}>
+            {["Major","Minor","Hotfix","Rollback"].map(t=><option key={t}>{t}</option>)}
+          </select>
+        </div>
+        <div>
+          <label style={FS.flbl}>Target Environment</label>
+          <select style={FS.finp} value={f.env} onChange={e=>s("env",e.target.value)}>
+            {["PROD","STAGING","UAT"].map(t=><option key={t}>{t}</option>)}
+          </select>
+        </div>
+        <div>
+          <label style={FS.flbl}>Scheduled Date</label>
+          <input style={FS.finp} placeholder="e.g. Aug 20 22:00 UTC" value={f.scheduled} onChange={e=>s("scheduled",e.target.value)}/>
+        </div>
+        <div>
+          <label style={FS.flbl}>DevOps Assignee</label>
+          <select style={FS.finp} value={f.devops} onChange={e=>s("devops",e.target.value)}>
+            {["Sarah K.","Mike T."].map(t=><option key={t}>{t}</option>)}
+          </select>
+        </div>
+        <div style={{gridColumn:"1/-1"}}>
+          <label style={FS.flbl}>Services Impacted (comma separated)</label>
+          <input style={FS.finp} placeholder="e.g. payment-svc, gateway-svc, fraud-svc" value={f.services} onChange={e=>s("services",e.target.value)}/>
+        </div>
+      </div>
+      <div style={{display:"flex",gap:8,justifyContent:"flex-end",marginTop:16}}>
+        <Btn onClick={onCancel} style={{padding:"7px 14px",fontSize:12,background:"#F1F5F9",color:"#334155"}}>Cancel</Btn>
+        <Btn onClick={()=>f.title.trim()&&onConfirm(f)} disabled={!f.title.trim()} style={{padding:"7px 16px",fontSize:12,background:"#15803D",color:"#fff"}}>Create Release →</Btn>
+      </div>
+    </Modal>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════════════════════════════
+function LoginScreen({ onLogin }) {
+  const [sel, setSel] = useState(null);
+  return (
+    <div style={{minHeight:"100vh",background:"linear-gradient(145deg,#0A1628 0%,#1B3461 55%,#0F766E 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+      <div style={{background:"#fff",borderRadius:16,padding:40,width:420,boxShadow:"0 24px 64px rgba(0,0,0,.4)"}}>
+        <div style={{textAlign:"center",marginBottom:30}}>
+          <div style={{fontSize:40,fontWeight:800,color:"#0A1628",letterSpacing:-2}}>NBRelease<span style={{color:"#FCD34D"}}>Orchestrator</span></div>
+          <div style={{fontSize:13,color:"#64748B",marginTop:4,fontWeight:500}}>Release Management Portal · Sign in to continue</div>
+          <div style={{marginTop:8,fontSize:11,color:"#94A3B8"}}>JWT · Spring Security 6 · Stateless Sessions</div>
+        </div>
+        <div style={{marginBottom:14}}>
+          <label style={FS.flbl}>Email</label>
+          <input style={FS.finp} defaultValue="demo@nexbank.com" readOnly/>
+        </div>
+        <div style={{marginBottom:20}}>
+          <label style={FS.flbl}>Password</label>
+          <input type="password" style={FS.finp} defaultValue="••••••••" readOnly/>
+        </div>
+        <label style={{...FS.flbl,marginBottom:8}}>Select Role to Login As (POC Demo)</label>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginBottom:22}}>
+          {ROLES.map(r=>(
+            <div key={r.id} onClick={()=>setSel(r)}
+              style={{padding:"9px 12px",borderRadius:8,border:`1.5px solid ${sel?.id===r.id?"#1D4ED8":"#E2E8F0"}`,fontSize:11,fontWeight:600,textAlign:"center",cursor:"pointer",color:sel?.id===r.id?"#1D4ED8":"#64748B",background:sel?.id===r.id?"#EFF6FF":"#fff",transition:"all .15s"}}>
+              {r.label}
+            </div>
+          ))}
+        </div>
+        <button onClick={()=>sel&&onLogin(sel)} disabled={!sel}
+          style={{width:"100%",padding:13,fontSize:15,fontWeight:800,background:sel?"#0A1628":"#E2E8F0",color:sel?"#fff":"#94A3B8",border:"none",borderRadius:8,cursor:sel?"pointer":"not-allowed",transition:"all .2s",fontFamily:"'DM Sans',sans-serif"}}>
+          {sel?`Sign In to NBReleaseOrchestrator`:"Select a role to continue"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════════
+function DashboardScreen({ releases, role, onOpen }) {
+  const c = { total:releases.length, pending:releases.filter(r=>r.status==="PENDING_REVIEW"||r.status==="CAB_REVIEW").length, approved:releases.filter(r=>r.status==="APPROVED").length, deploying:releases.filter(r=>r.status==="IN_PROGRESS").length };
+  const kpis = [
+    { label:"Total Releases",   val:c.total,    color:"#1D4ED8", bg:"#EFF6FF", icon:"📋" },
+    { label:"Pending Approval", val:c.pending,  color:"#B45309", bg:"#FEF3C7", icon:"⏳" },
+    { label:"Approved / Ready", val:c.approved, color:"#15803D", bg:"#DCFCE7", icon:"✓" },
+    { label:"In Progress",      val:c.deploying,color:"#0F766E", bg:"#CCFBF1", icon:"🚀" },
+  ];
+  return (
+    <div className="screen-enter">
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:20}}>
+        {kpis.map(k=>(
+          <div key={k.label} style={{background:"#fff",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,.07)",borderLeft:`4px solid ${k.color}`}}>
+            <div style={{fontSize:10,color:"#94A3B8",textTransform:"uppercase",letterSpacing:1,fontWeight:700}}>{k.icon} {k.label}</div>
+            <div style={{fontSize:42,fontWeight:800,color:"#0A1628",lineHeight:1.1,margin:"6px 0"}}>{k.val}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 360px",gap:16}}>
+        <div style={{background:"#fff",borderRadius:10,boxShadow:"0 1px 4px rgba(0,0,0,.07)",overflow:"hidden"}}>
+          <div style={{padding:"13px 18px",borderBottom:"1px solid #E2E8F0",display:"flex",alignItems:"center"}}>
+            <div style={{fontWeight:800,color:"#0A1628",fontSize:14}}>Recent Releases</div>
+            <div style={{marginLeft:"auto",fontSize:11,color:"#94A3B8"}}>Click any row to open detail</div>
+          </div>
+          <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+            <thead><tr>{["Key","Title","Status","Env","Scheduled"].map(h=><th key={h} style={FS.th}>{h}</th>)}</tr></thead>
+            <tbody>
+              {releases.slice(0,5).map((r,i)=>(
+                <tr key={r.id} className="trow" onClick={()=>onOpen(r)} style={{cursor:"pointer"}}>
+                  <td style={FS.td}><span style={FS.tkey}>{r.key}</span></td>
+                  <td style={{...FS.td,maxWidth:260}}><div style={{fontSize:12,fontWeight:600,color:"#0F172A",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{r.title}</div></td>
+                  <td style={FS.td}><StatusBadge status={r.status}/></td>
+                  <td style={FS.td}><EnvBadge env={r.env}/></td>
+                  <td style={{...FS.td,fontSize:11,color:"#64748B"}}>{r.scheduled}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div style={{background:"#fff",borderRadius:10,boxShadow:"0 1px 4px rgba(0,0,0,.07)",padding:18}}>
+          <div style={{fontWeight:800,color:"#0A1628",fontSize:14,marginBottom:14}}>🔴 Live Activity</div>
+          {[
+            {dot:"#15803D",text:"RM-46 approved by James R.",time:"2m ago"},
+            {dot:"#1D4ED8",text:"RM-43 deployment initiated",time:"18m ago"},
+            {dot:"#0F766E",text:"PAYMENTS-123 synced from Jira",time:"1h ago"},
+            {dot:"#B45309",text:"RM-44 escalated to CAB Review",time:"3h ago"},
+            {dot:"#6D28D9",text:"James R. commented on RM-45",time:"5h ago"},
+          ].map((a,i)=>(
+            <div key={i} style={{display:"flex",gap:10,padding:"8px 0",borderBottom:i<4?"1px solid #F1F5F9":"none"}}>
+              <div style={{width:8,height:8,borderRadius:"50%",background:a.dot,marginTop:4,flexShrink:0}}/>
+              <div style={{flex:1,fontSize:12,color:"#334155"}}>{a.text}</div>
+              <div style={{fontSize:10,color:"#94A3B8",whiteSpace:"nowrap"}}>{a.time}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RELEASES LIST
+// ═══════════════════════════════════════════════════════════════
+function ReleasesScreen({ releases, role, onOpen, filter, setFilter, q, setQ, onNew }) {
+  return (
+    <div className="screen-enter">
+      <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap",alignItems:"center"}}>
+        <input style={{...FS.finp,flex:1,minWidth:200,padding:"7px 12px"}} placeholder="🔍  Search by key, title, service..." value={q} onChange={e=>setQ(e.target.value)}/>
+        <select style={{...FS.finp,width:"auto"}} value={filter} onChange={e=>setFilter(e.target.value)}>
+          <option value="ALL">All Statuses</option>
+          {Object.entries(STATUS_META).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
+        </select>
+        {(filter!=="ALL"||q) && <Btn onClick={()=>{setFilter("ALL");setQ("");}} style={{padding:"7px 12px",fontSize:12,background:"#F1F5F9",color:"#334155"}}>✕ Clear</Btn>}
+        {role?.id==="REL_MGR" && <Btn onClick={onNew} style={{padding:"7px 14px",fontSize:12,background:"#15803D",color:"#fff"}}>+ New Release</Btn>}
+      </div>
+      <div style={{background:"#fff",borderRadius:10,boxShadow:"0 1px 4px rgba(0,0,0,.07)",overflow:"hidden"}}>
+        <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+          <thead><tr>{["Ticket","Title / Services","Type","Env","Status","Scheduled","Teams",""].map(h=><th key={h} style={FS.th}>{h}</th>)}</tr></thead>
+          <tbody>
+            {releases.map(r=>(
+              <tr key={r.id} className="trow" style={{cursor:"pointer"}} onClick={()=>onOpen(r)}>
+                <td style={FS.td}><span style={FS.tkey}>{r.key}</span></td>
+                <td style={{...FS.td,maxWidth:220}}>
+                  <div style={{fontSize:12,fontWeight:600,color:"#0F172A"}}>{r.title}</div>
+                  <div style={{fontSize:10,color:"#94A3B8",marginTop:2}}>{r.services?.slice(0,2).join(", ")}{r.services?.length>2?` +${r.services.length-2} more`:""}</div>
+                </td>
+                <td style={FS.td}><TypeBadge type={r.type}/></td>
+                <td style={FS.td}><EnvBadge env={r.env}/></td>
+                <td style={FS.td}><StatusBadge status={r.status}/></td>
+                <td style={{...FS.td,fontSize:11,color:"#64748B",whiteSpace:"nowrap"}}>{r.scheduled}</td>
+                <td style={{...FS.td,fontSize:11,color:"#64748B"}}>{r.teams} teams · {r.items} items</td>
+                <td style={FS.td} onClick={e=>e.stopPropagation()}>
+                  <Btn onClick={()=>onOpen(r)} style={{padding:"5px 11px",fontSize:11,background:"#EFF6FF",color:"#1D4ED8"}}>View →</Btn>
+                </td>
+              </tr>
+            ))}
+            {releases.length===0 && <tr><td colSpan={8} style={{...FS.td,textAlign:"center",color:"#94A3B8",padding:40}}>No releases match your filter</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RELEASE DETAIL
+// ═══════════════════════════════════════════════════════════════
+function DetailScreen({ release, role, linkedItems, auditEvents, onApprove, onReject, onInitiate, onRollback, onLinkTicket, onBack, onMarkDeployed }) {
+  const [tab, setTab] = useState(0);
+  const canApprove  = role?.id==="REL_MGR" && release.status==="PENDING_REVIEW";
+  const canReject   = role?.id==="REL_MGR" && (release.status==="PENDING_REVIEW"||release.status==="CAB_REVIEW");
+  const canInitiate = role?.id==="DEVOPS"  && release.status==="APPROVED";
+  const canRollback = (role?.id==="DEVOPS"||role?.id==="REL_MGR") && release.status==="IN_PROGRESS";
+  const canMarkDep  = role?.id==="DEVOPS"  && release.status==="IN_PROGRESS";
+  const canLink     = (role?.id==="DEV"||role?.id==="REL_MGR");
+
+  const groups = linkedItems.reduce((a,i)=>{(a[i.team]=a[i.team]||[]).push(i);return a;},{});
+  const TABS = ["📋 Overview", `🔗 Release Items (${linkedItems.length})`, "✓ Approvals", "🚀 Deployment Steps", `🔍 Audit Trail (${auditEvents.length})`];
+
+  return (
+    <div className="screen-enter">
+      <Btn onClick={onBack} style={{padding:"5px 12px",fontSize:11,background:"#F1F5F9",color:"#334155",marginBottom:12}}>← Back to Release List</Btn>
+      {/* Hero */}
+      <div style={{background:"linear-gradient(135deg,#0A1628 0%,#1D4ED8 100%)",borderRadius:"12px 12px 0 0",padding:"22px 26px",color:"#fff",display:"flex",gap:16,alignItems:"flex-start"}}>
+        <div style={{flex:1}}>
+          <div style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:"#93C5FD",marginBottom:5}}>{release.key} · Release Change Request · <span style={{color:"#FCD34D"}}>Centralized RM Project</span></div>
+          <div style={{fontSize:20,fontWeight:800,lineHeight:1.3}}>{release.title}</div>
+          <div style={{display:"flex",gap:16,marginTop:10,flexWrap:"wrap"}}>
+            {[["Type",release.type],["Env",release.env],["Scheduled",release.scheduled],["DevOps",release.devops],["Rel.Mgr",release.manager],["Linked Items",`${linkedItems.length} across ${Object.keys(groups).length} teams`]].map(([l,v])=>(
+              <div key={l} style={{fontSize:11,color:"#93C5FD"}}><strong style={{color:"#fff"}}>{l}</strong> {v}</div>
+            ))}
+          </div>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:8,alignItems:"flex-end",flexShrink:0}}>
+          <StatusBadge status={release.status} large/>
+          {canApprove  && <Btn onClick={onApprove}  style={{padding:"9px 16px",fontSize:12,background:"#15803D",color:"#fff"}}>✓ Approve Release</Btn>}
+          {canReject   && <Btn onClick={onReject}   style={{padding:"7px 12px",fontSize:12,background:"#B91C1C",color:"#fff"}}>✗ Reject</Btn>}
+          {canInitiate && <Btn onClick={onInitiate} style={{padding:"9px 16px",fontSize:12,background:"#1D4ED8",color:"#fff"}}>🚀 Initiate Deployment</Btn>}
+          {canMarkDep  && <Btn onClick={onMarkDeployed} style={{padding:"7px 12px",fontSize:12,background:"#0F766E",color:"#fff"}}>✓ Mark Deployed</Btn>}
+          {canRollback && <Btn onClick={onRollback} style={{padding:"7px 12px",fontSize:12,background:"#B45309",color:"#fff"}}>⚠ Rollback</Btn>}
+        </div>
+      </div>
+      {/* Tabs */}
+      <div style={{display:"flex",borderBottom:"2px solid #E2E8F0",background:"#fff"}}>
+        {TABS.map((t,i)=>(
+          <div key={i} onClick={()=>setTab(i)}
+            style={{padding:"12px 18px",fontSize:12,fontWeight:700,color:tab===i?"#1D4ED8":"#94A3B8",cursor:"pointer",borderBottom:tab===i?"3px solid #1D4ED8":"3px solid transparent",marginBottom:-2,whiteSpace:"nowrap",transition:"color .15s"}}>
+            {t}
+          </div>
+        ))}
+      </div>
+      {/* Tab Content */}
+      <div style={{background:"#fff",borderRadius:"0 0 12px 12px",padding:22,boxShadow:"0 1px 4px rgba(0,0,0,.07)"}}>
+
+        {/* ── OVERVIEW ── */}
+        {tab===0 && (
+          <div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
+              {[["Jira Ticket Key",release.key+" (RM Space)"],["Release Type",release.type],["Target Environment",release.env],["Scheduled Date",release.scheduled],["DevOps Assignee",release.devops],["Release Mgr",release.manager]].map(([l,v])=>(
+                <div key={l}>
+                  <div style={{fontSize:10,color:"#94A3B8",textTransform:"uppercase",letterSpacing:.8,fontWeight:700,marginBottom:4}}>{l}</div>
+                  <div style={{fontSize:13,fontWeight:600,color:l.includes("Key")?"#1D4ED8":"#0F172A",fontFamily:l.includes("Key")?"'DM Mono',monospace":"inherit"}}>{v}</div>
+                </div>
+              ))}
+            </div>
+            <div>
+              <div style={{fontSize:10,color:"#94A3B8",textTransform:"uppercase",letterSpacing:.8,fontWeight:700,marginBottom:8}}>Services Impacted</div>
+              <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
+                {release.services?.map(s=><Tag key={s}>{s}</Tag>)}
+              </div>
+            </div>
+            <div style={{marginTop:18,padding:14,background:"#F0FDF4",border:"1px solid #BBF7D0",borderRadius:8}}>
+              <div style={{fontSize:12,fontWeight:700,color:"#15803D",marginBottom:6}}>🔗 Jira RM Space Strategy</div>
+              <div style={{fontSize:12,color:"#166534"}}>This Release Umbrella Ticket lives in the centralized <strong>RM Jira space</strong>. Development teams link their User Stories and Bugs to this key from their own project spaces. The portal fetches all linked items via <code style={{background:"#DCFCE7",padding:"1px 5px",borderRadius:3}}>GET /rest/api/3/issue/{release.key}/remotelinks</code>.</div>
+            </div>
+          </div>
+        )}
+
+        {/* ── RELEASE ITEMS ── */}
+        {tab===1 && (
+          <div>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
+              <div style={{fontSize:12,color:"#64748B"}}>{linkedItems.length} items linked across {Object.keys(groups).length} teams</div>
+              <div style={{marginLeft:"auto",display:"flex",gap:8}}>
+                <Btn style={{padding:"6px 12px",fontSize:11,background:"#F1F5F9",color:"#334155"}}>🔄 Sync from Jira</Btn>
+                {canLink && <Btn onClick={onLinkTicket} style={{padding:"6px 12px",fontSize:11,background:"#1D4ED8",color:"#fff"}}>+ Link Ticket</Btn>}
+              </div>
+            </div>
+            {Object.entries(groups).map(([team,items])=>(
+              <div key={team} style={{marginBottom:16}}>
+                <div style={{fontWeight:700,color:"#0A1628",background:"#F1F5F9",padding:"7px 14px",borderRadius:"7px 7px 0 0",border:"1px solid #E2E8F0",fontSize:12,display:"flex",alignItems:"center"}}>
+                  <span>{team}</span><span style={{marginLeft:"auto",fontSize:11,color:"#94A3B8"}}>{items.length} items</span>
+                </div>
+                <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,border:"1px solid #E2E8F0",borderTop:"none"}}>
+                  <thead><tr>{["Jira Key","Summary","Type","Status in Jira","Linked By","Linked At"].map(h=><th key={h} style={FS.th}>{h}</th>)}</tr></thead>
+                  <tbody>
+                    {items.map(item=>(
+                      <tr key={item.id} className="trow">
+                        <td style={FS.td}><span style={FS.tkey}>{item.key}</span></td>
+                        <td style={{...FS.td,maxWidth:240,fontSize:11}}>{item.summary}</td>
+                        <td style={FS.td}><span style={{fontSize:10,fontWeight:700,color:"#1D4ED8"}}>{item.type}</span></td>
+                        <td style={FS.td}><span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:100,background:item.status==="Done"?"#DCFCE7":item.status==="In Progress"?"#BFDBFE":"#FEF3C7",color:item.status==="Done"?"#15803D":item.status==="In Progress"?"#1D4ED8":"#B45309"}}>{item.status}</span></td>
+                        <td style={{...FS.td,fontSize:11,color:"#64748B"}}>{item.linkedBy}</td>
+                        <td style={{...FS.td,fontSize:10,color:"#94A3B8"}}>{item.linkedAt}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ))}
+            {linkedItems.length===0 && (
+              <div style={{textAlign:"center",padding:48,color:"#94A3B8"}}>
+                <div style={{fontSize:36,marginBottom:10}}>🔗</div>
+                <div style={{fontSize:13}}>No tickets linked yet.</div>
+                {canLink && <div style={{fontSize:12,marginTop:4}}>Click <strong>+ Link Ticket</strong> to add dev team items to this release.</div>}
+              </div>
+            )}
+            {linkedItems.length>0 && (
+              <div style={{background:"#EFF6FF",border:"1px solid #BFDBFE",borderRadius:8,padding:"10px 16px",display:"flex",gap:24,fontSize:12,marginTop:8}}>
+                <span style={{color:"#15803D",fontWeight:700}}>{linkedItems.filter(i=>i.status==="Done").length} ✅ Done</span>
+                <span style={{color:"#B45309",fontWeight:700}}>{linkedItems.filter(i=>i.status!=="Done").length} ⏳ Pending</span>
+                <span style={{color:"#64748B",marginLeft:"auto",fontSize:11}}>All items should be Done before approval</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── APPROVALS ── */}
+        {tab===2 && (
+          <div>
+            <div style={{marginBottom:16,padding:14,background:"#F8FAFC",borderRadius:8,border:"1px solid #E2E8F0",fontSize:12,color:"#64748B"}}>
+              <strong style={{color:"#0A1628"}}>{release.type} Release:</strong> {release.type==="Major"?"Requires Release Mgr approval + CAB sign-off":"Requires Release Mgr direct approval only"}
+            </div>
+            {[
+              {name:"James R.", role:"Release Mgr", st: release.status==="APPROVED"||release.status==="IN_PROGRESS"||release.status==="DEPLOYED"||release.status==="VERIFIED"?"APPROVED":release.status==="REJECTED"?"REJECTED":"PENDING"},
+              ...(release.type==="Major"?[{name:"CAB Committee", role:"Change Advisory Board", st:release.status==="CAB_REVIEW"?"UNDER_REVIEW":release.status==="APPROVED"?"APPROVED":"PENDING"}]:[]),
+            ].map((a,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:14,padding:"14px 0",borderBottom:i===0?"1px solid #E2E8F0":"none"}}>
+                <Avatar initials={a.name.slice(0,2)}/>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,fontWeight:700,color:"#0A1628"}}>{a.name}</div>
+                  <div style={{fontSize:11,color:"#64748B"}}>{a.role}</div>
+                </div>
+                <span style={{padding:"4px 14px",borderRadius:100,fontSize:11,fontWeight:700,background:a.st==="APPROVED"?"#DCFCE7":a.st==="REJECTED"?"#FEE2E2":a.st==="UNDER_REVIEW"?"#EDE9FE":"#F1F5F9",color:a.st==="APPROVED"?"#15803D":a.st==="REJECTED"?"#B91C1C":a.st==="UNDER_REVIEW"?"#6D28D9":"#64748B"}}>{a.st}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── DEPLOYMENT STEPS ── */}
+        {tab===3 && (
+          <div>
+            {[
+              ["Pre-deployment", "Verify all linked Jira items are Done · Confirm staging smoke tests passed · Check deployment window with DevOps"],
+              ["Database migrations", "Run migration scripts on prod DB replica · Verify row counts · Apply to primary with zero-downtime strategy"],
+              ["Service deployment", `Deploy ${release.services?.join(", ")||"services"} via Kubernetes rolling update · Monitor pod health`],
+              ["Health checks", "Verify /health endpoints on all deployed services · Check error rates in Datadog · Alert thresholds nominal"],
+              ["Smoke tests", "Run critical path tests: payment flow, auth flow, core APIs · QA team sign-off required"],
+              ["Post-release", "Monitor 30 mins · Mark VERIFIED in portal · Update linked Jira tickets · Notify Release Mgr"],
+            ].map(([title,detail],i)=>(
+              <div key={i} style={{display:"flex",gap:14,marginBottom:14}}>
+                <div style={{width:30,height:30,borderRadius:"50%",background:"#0A1628",color:"#FCD34D",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:13,flexShrink:0}}>{i+1}</div>
+                <div style={{background:"#F8FAFC",borderRadius:8,padding:"11px 15px",flex:1,border:"1px solid #E2E8F0"}}>
+                  <div style={{fontSize:12,fontWeight:700,color:"#0A1628",marginBottom:3}}>{title}</div>
+                  <div style={{fontSize:11,color:"#64748B",lineHeight:1.5}}>{detail}</div>
+                </div>
+              </div>
+            ))}
+            <div style={{padding:12,background:"#FEF3C7",border:"1px solid #FCD34D",borderRadius:8,fontSize:12,color:"#B45309"}}>
+              <strong>Rollback Plan:</strong> If any step fails, trigger rollback from the portal. Previous version will be redeployed via Kubernetes rollout undo. All stakeholders will be notified automatically.
+            </div>
+          </div>
+        )}
+
+        {/* ── AUDIT TRAIL ── */}
+        {tab===4 && (
+          <div>
+            <div style={{fontSize:11,color:"#94A3B8",marginBottom:14,padding:"8px 12px",background:"#F8FAFC",borderRadius:6,border:"1px solid #E2E8F0"}}>⚠ Immutable — records are INSERT-only. No updates or deletes ever.</div>
+            {auditEvents.length===0 && <div style={{textAlign:"center",padding:40,color:"#94A3B8"}}>No audit events yet</div>}
+            {auditEvents.map((e,i)=>(
+              <div key={e.id} style={{display:"flex",gap:12,padding:"11px 0",borderBottom:i<auditEvents.length-1?"1px solid #F1F5F9":"none"}}>
+                <div style={{width:10,height:10,borderRadius:"50%",background:e.color,marginTop:4,flexShrink:0}}/>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:12,fontWeight:700,color:"#0A1628"}}>{e.action}</div>
+                  <div style={{fontSize:11,color:"#64748B",marginTop:2}}>{e.detail}</div>
+                  <div style={{display:"flex",gap:8,marginTop:5,flexWrap:"wrap"}}>
+                    <span style={{fontSize:10,color:"#94A3B8"}}>{e.actor}</span>
+                    <span style={{fontSize:10,color:"#E2E8F0"}}>·</span>
+                    <span style={{fontSize:10,padding:"1px 7px",borderRadius:4,fontWeight:700,background:e.source==="JIRA_WEBHOOK"?"#EDE9FE":"#EFF6FF",color:e.source==="JIRA_WEBHOOK"?"#6D28D9":"#1D4ED8"}}>{e.source}</span>
+                    <span style={{fontSize:10,color:"#E2E8F0"}}>·</span>
+                    <span style={{fontSize:10,color:"#94A3B8"}}>{e.time}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DEPLOY QUEUE
+// ═══════════════════════════════════════════════════════════════
+function QueueScreen({ releases, onOpen }) {
+  return (
+    <div className="screen-enter">
+      {releases.length===0 && (
+        <div style={{textAlign:"center",padding:60,background:"#fff",borderRadius:10,color:"#94A3B8"}}>
+          <div style={{fontSize:40,marginBottom:12}}>✅</div>
+          <div style={{fontSize:14,fontWeight:700}}>Deploy queue is empty</div>
+          <div style={{fontSize:12,marginTop:4}}>No approved releases waiting for deployment</div>
+        </div>
+      )}
+      {releases.map(r=>(
+        <div key={r.id} style={{background:"#fff",borderRadius:10,boxShadow:"0 1px 4px rgba(0,0,0,.07)",marginBottom:14,overflow:"hidden",border:"1px solid #E2E8F0"}}>
+          <div style={{display:"flex",alignItems:"center",gap:12,padding:"14px 18px",borderBottom:"1px solid #E2E8F0"}}>
+            <div style={{width:4,borderRadius:4,alignSelf:"stretch",background:r.type==="Hotfix"?"#B91C1C":"#B45309"}}/>
+            <span style={FS.tkey}>{r.key}</span>
+            <div style={{fontWeight:700,fontSize:14,color:"#0A1628",flex:1}}>{r.title}</div>
+            <StatusBadge status={r.status}/>
+          </div>
+          <div style={{display:"flex",gap:24,padding:"12px 18px",flexWrap:"wrap"}}>
+            {[["Environment",r.env],["Scheduled",r.scheduled],["Type",r.type],["DevOps",r.devops],["Linked Items",`${r.items} items`]].map(([l,v])=>(
+              <div key={l}><div style={{fontSize:10,color:"#94A3B8",marginBottom:2}}>{l}</div><div style={{fontSize:12,fontWeight:600,color:"#0F172A"}}>{v}</div></div>
+            ))}
+          </div>
+          <div style={{display:"flex",gap:8,padding:"10px 18px",background:"#F8FAFC",borderTop:"1px solid #E2E8F0"}}>
+            <Btn onClick={()=>onOpen(r)} style={{padding:"7px 14px",fontSize:12,background:"#EFF6FF",color:"#1D4ED8"}}>View Details</Btn>
+            {r.status==="APPROVED"    && <Btn onClick={()=>onOpen(r)} style={{padding:"7px 14px",fontSize:12,background:"#1D4ED8",color:"#fff"}}>🚀 Initiate Deployment</Btn>}
+            {r.status==="IN_PROGRESS" && <Btn onClick={()=>onOpen(r)} style={{padding:"7px 14px",fontSize:12,background:"#B45309",color:"#fff"}}>⚠ Rollback</Btn>}
+            {r.status==="IN_PROGRESS" && <Btn onClick={()=>onOpen(r)} style={{padding:"7px 14px",fontSize:12,background:"#0F766E",color:"#fff"}}>✓ Mark Deployed</Btn>}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AUDIT LOG
+// ═══════════════════════════════════════════════════════════════
+function AuditScreen({ events, releases }) {
+  return (
+    <div className="screen-enter" style={{background:"#fff",borderRadius:10,boxShadow:"0 1px 4px rgba(0,0,0,.07)",overflow:"hidden"}}>
+      <div style={{padding:"13px 18px",borderBottom:"1px solid #E2E8F0",display:"flex",alignItems:"center"}}>
+        <div style={{fontWeight:800,color:"#0A1628",fontSize:14}}>Immutable Audit Trail — All Events ({events.length})</div>
+        <div style={{marginLeft:"auto",fontSize:11,color:"#94A3B8"}}>INSERT-only · No updates or deletes ever</div>
+      </div>
+      <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+        <thead><tr>{["Action","Release","Actor","Source","Detail","Time"].map(h=><th key={h} style={FS.th}>{h}</th>)}</tr></thead>
+        <tbody>
+          {events.map(e=>{
+            const rel=releases.find(r=>r.id===e.releaseId);
+            return (
+              <tr key={e.id} className="trow">
+                <td style={FS.td}><span style={{fontSize:11,fontWeight:700,color:e.color}}>{e.action}</span></td>
+                <td style={FS.td}><span style={FS.tkey}>{rel?.key||"—"}</span></td>
+                <td style={{...FS.td,fontSize:11}}>{e.actor}</td>
+                <td style={FS.td}><span style={{fontSize:10,padding:"2px 7px",borderRadius:4,fontWeight:700,background:e.source==="JIRA_WEBHOOK"?"#EDE9FE":"#EFF6FF",color:e.source==="JIRA_WEBHOOK"?"#6D28D9":"#1D4ED8"}}>{e.source}</span></td>
+                <td style={{...FS.td,fontSize:11,color:"#64748B",maxWidth:280}}>{e.detail}</td>
+                <td style={{...FS.td,fontSize:10,color:"#94A3B8",whiteSpace:"nowrap"}}>{e.time}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// NOTIFICATIONS SCREEN
+// ═══════════════════════════════════════════════════════════════
+function NotifsScreen({ notifs, onRead, onMarkAll }) {
+  return (
+    <div className="screen-enter" style={{background:"#fff",borderRadius:10,boxShadow:"0 1px 4px rgba(0,0,0,.07)",overflow:"hidden"}}>
+      <div style={{padding:"13px 18px",borderBottom:"1px solid #E2E8F0",display:"flex",alignItems:"center"}}>
+        <div style={{fontWeight:800,color:"#0A1628",fontSize:14}}>Notifications</div>
+        <Btn onClick={onMarkAll} style={{marginLeft:"auto",padding:"5px 12px",fontSize:11,background:"#F1F5F9",color:"#334155"}}>Mark all read</Btn>
+      </div>
+      {notifs.map(n=>(
+        <div key={n.id} onClick={()=>onRead(n.id)} style={{display:"flex",gap:14,padding:"16px 18px",borderBottom:"1px solid #F1F5F9",background:n.read?"#fff":"#FAFBFF",cursor:"pointer",transition:"background .15s"}}>
+          <div style={{width:10,height:10,borderRadius:"50%",background:n.read?"#E2E8F0":n.color,marginTop:5,flexShrink:0}}/>
+          <div style={{flex:1}}>
+            <div style={{fontSize:13,fontWeight:n.read?500:700,color:"#0A1628"}}>{n.title}</div>
+            <div style={{fontSize:11,color:"#64748B",marginTop:3}}>{n.sub}</div>
+          </div>
+          <div style={{fontSize:10,color:"#94A3B8",whiteSpace:"nowrap"}}>{n.time}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// NOTIFICATION DROPDOWN
+// ═══════════════════════════════════════════════════════════════
+function NotifDropdown({ notifs, onRead, onClose }) {
+  const ref = useRef();
+  useEffect(()=>{
+    const h = e => { if(ref.current&&!ref.current.contains(e.target)) onClose(); };
+    document.addEventListener("mousedown",h);
+    return ()=>document.removeEventListener("mousedown",h);
+  },[]);
+  return (
+    <div ref={ref} style={{position:"absolute",right:0,top:44,width:340,background:"#fff",borderRadius:12,boxShadow:"0 8px 40px rgba(0,0,0,.18)",border:"1px solid #E2E8F0",zIndex:300,overflow:"hidden",animation:"fadein .15s"}}>
+      <div style={{padding:"11px 16px",borderBottom:"1px solid #E2E8F0",fontWeight:700,fontSize:12,color:"#0A1628",display:"flex",alignItems:"center"}}>
+        Notifications
+        <span style={{marginLeft:8,background:"#B45309",color:"#fff",fontSize:9,fontWeight:700,padding:"1px 6px",borderRadius:100}}>{notifs.filter(n=>!n.read).length}</span>
+      </div>
+      {notifs.slice(0,5).map(n=>(
+        <div key={n.id} onClick={()=>onRead(n.id)} style={{display:"flex",gap:10,padding:"12px 16px",borderBottom:"1px solid #F1F5F9",background:n.read?"#fff":"#FAFBFF",cursor:"pointer"}}>
+          <div style={{width:8,height:8,borderRadius:"50%",background:n.read?"#E2E8F0":n.color,marginTop:5,flexShrink:0}}/>
+          <div style={{flex:1}}>
+            <div style={{fontSize:12,fontWeight:n.read?400:700,color:"#0A1628"}}>{n.title}</div>
+            <div style={{fontSize:10,color:"#94A3B8",marginTop:1}}>{n.time}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SHARED FORM STYLES
+// ═══════════════════════════════════════════════════════════════
+const FS = {
+  th: {textAlign:"left",padding:"9px 13px",fontSize:10,fontWeight:700,color:"#94A3B8",textTransform:"uppercase",letterSpacing:.8,borderBottom:"2px solid #E2E8F0",background:"#F8FAFC",whiteSpace:"nowrap"},
+  td: {padding:"10px 13px",borderBottom:"1px solid #F1F5F9",verticalAlign:"middle"},
+  tkey: {fontFamily:"'DM Mono',monospace",fontSize:11,color:"#1D4ED8",fontWeight:600},
+  flbl: {fontSize:11,fontWeight:700,color:"#334155",marginBottom:5,display:"block"},
+  finp: {width:"100%",padding:"8px 11px",border:"1.5px solid #E2E8F0",borderRadius:6,fontSize:12,fontFamily:"'DM Sans',sans-serif",color:"#0F172A",background:"#fff",outline:"none"},
+};
+
+// ═══════════════════════════════════════════════════════════════
+// ROOT APP
+// ═══════════════════════════════════════════════════════════════
+function App() {
+  const [screen, setScreen]         = useState("login");
+  const [role, setRole]             = useState(null);
+  const [releases, setReleases]     = useState(INIT_RELEASES);
+  const [selectedId, setSelectedId] = useState(null);
+  const [linkedItems, setLinked]    = useState(INIT_LINKED);
+  const [auditEvents, setAudit]     = useState(INIT_AUDIT);
+  const [notifs, setNotifs]         = useState(INIT_NOTIFS);
+  const [notifOpen, setNotifOpen]   = useState(false);
+  const [toast, setToast]           = useState(null);
+  const [filter, setFilter]         = useState("ALL");
+  const [searchQ, setSearchQ]       = useState("");
+  const [modals, setModals]         = useState({});
+
+  const selected = releases.find(r=>r.id===selectedId)||null;
+  const unread = notifs.filter(n=>!n.read).length;
+
+  const showToast = (msg, type="success") => {
+    setToast({msg,type});
+    setTimeout(()=>setToast(null),3200);
+  };
+
+  const openModal = k => setModals(m=>({...m,[k]:true}));
+  const closeModal = k => setModals(m=>({...m,[k]:false}));
+
+  const addAudit = (releaseId, action, actor, detail, source, color="#1D4ED8") => {
+    setAudit(prev=>[{id:Date.now(),releaseId,action,actor,detail,source,time:"Just now",color},...prev]);
+  };
+
+  const pushNotif = (title, sub, color) => {
+    setNotifs(prev=>[{id:Date.now(),title,sub,time:"Just now",read:false,color},...prev]);
+  };
+
+  const openRelease = r => { setSelectedId(r.id); setScreen("detail"); };
+
+  const mutRelease = (id, patch) => {
+    setReleases(prev=>prev.map(r=>r.id===id?{...r,...patch}:r));
+  };
+
+  // Actions
+  const handleApprove = () => {
+    mutRelease(selectedId,{status:"APPROVED"});
+    addAudit(selectedId,"APPROVED",role.name,`${selected.key} approved by ${role.name}`,"PORTAL","#15803D");
+    pushNotif(`${selected.key} approved`,selected.title,"#15803D");
+    showToast(`✅ ${selected.key} approved — DevOps notified`);
+    closeModal("approve");
+  };
+  const handleReject = reason => {
+    mutRelease(selectedId,{status:"REJECTED"});
+    addAudit(selectedId,"REJECTED",role.name,`Rejected: ${reason}`,"PORTAL","#B91C1C");
+    pushNotif(`${selected.key} rejected`,selected.title,"#B91C1C");
+    showToast(`❌ ${selected.key} rejected`,"error");
+    closeModal("reject");
+  };
+  const handleInitiate = () => {
+    mutRelease(selectedId,{status:"IN_PROGRESS"});
+    addAudit(selectedId,"DEPLOY_STARTED",role.name,`Deployment initiated by ${role.name}`,"PORTAL","#1D4ED8");
+    pushNotif(`${selected.key} deployment started`,selected.title,"#1D4ED8");
+    showToast(`🚀 Deployment of ${selected.key} initiated`);
+    closeModal("initiate");
+  };
+  const handleMarkDeployed = () => {
+    mutRelease(selectedId,{status:"DEPLOYED"});
+    addAudit(selectedId,"DEPLOYED",role.name,`${selected.key} marked deployed by ${role.name}`,"PORTAL","#0F766E");
+    pushNotif(`${selected.key} deployed`,selected.title,"#0F766E");
+    showToast(`🎉 ${selected.key} marked as deployed`);
+  };
+  const handleRollback = reason => {
+    mutRelease(selectedId,{status:"ROLLED_BACK"});
+    addAudit(selectedId,"ROLLED_BACK",role.name,`Rollback triggered: ${reason}`,"PORTAL","#B45309");
+    pushNotif(`${selected.key} rolled back`,selected.title,"#B45309");
+    showToast(`⚠️ Rollback triggered for ${selected.key}`,"warn");
+    closeModal("rollback");
+  };
+  const handleLink = (key, team) => {
+    const ni = {id:Date.now(),releaseId:selectedId,key,summary:`Linked ticket ${key}`,type:"Story",status:"In Progress",team:team||"Dev Team",linkedBy:role.name,linkedAt:"Just now"};
+    setLinked(prev=>[...prev,ni]);
+    setReleases(prev=>prev.map(r=>r.id===selectedId?{...r,items:r.items+1}:r));
+    addAudit(selectedId,"LINKED_ITEM_ADDED",role.name,`${key} linked to ${selected.key}`,"PORTAL","#0F766E");
+    showToast(`🔗 ${key} linked to ${selected.key} successfully`);
+    closeModal("link");
+  };
+  const handleNewRelease = f => {
+    const nr = {id:Date.now(),key:`RM-${47+releases.length}`,title:f.title,type:f.type,env:f.env,status:"DRAFT",scheduled:f.scheduled||"TBD",devops:f.devops,manager:role.name,teams:0,items:0,services:f.services.split(",").map(s=>s.trim()).filter(Boolean)};
+    setReleases(prev=>[nr,...prev]);
+    addAudit(nr.id,"TICKET_CREATED",role.name,`${nr.key} created in RM space by ${role.name}`,"PORTAL","#1D4ED8");
+    showToast(`✅ ${nr.key} created in RM space — share this key with dev teams`);
+    closeModal("newrelease");
+  };
+
+  const filteredReleases = releases.filter(r=>{
+    const ms = filter==="ALL"||r.status===filter;
+    const mq = !searchQ||r.key.toLowerCase().includes(searchQ.toLowerCase())||r.title.toLowerCase().includes(searchQ.toLowerCase());
+    return ms&&mq;
+  });
+
+  const selLinked  = selected ? linkedItems.filter(i=>i.releaseId===selected.id) : [];
+  const selAudit   = selected ? auditEvents.filter(e=>e.releaseId===selected.id) : [];
+  const queueRels  = releases.filter(r=>r.status==="APPROVED"||r.status==="IN_PROGRESS");
+  const pendRels   = releases.filter(r=>r.status==="PENDING_REVIEW"||r.status==="CAB_REVIEW");
+
+  const NAV = [
+    {id:"dashboard",ico:"⊞",label:"Dashboard"},
+    {id:"releases", ico:"📋",label:"Release List"},
+    ...(role?.id==="DEVOPS"||role?.id==="REL_MGR" ? [{id:"queue",ico:"🚀",label:"Deploy Queue",badge:queueRels.length}]:[]),
+    ...(role?.id==="REL_MGR" ? [{id:"approvals",ico:"✓",label:"Approvals",badge:pendRels.length}]:[]),
+    {id:"audit",    ico:"🔍",label:"Audit Logs"},
+    {id:"notifs",   ico:"🔔",label:"Notifications",badge:unread},
+  ];
+
+  if(screen==="login") return <LoginScreen onLogin={r=>{setRole(r);setScreen("dashboard");}}/>;
+
+  return (
+    <div style={{display:"flex",height:"100vh",fontFamily:"'DM Sans',system-ui,sans-serif",background:"#F1F5F9",overflow:"hidden"}}>
+      {/* SIDEBAR */}
+      <aside style={{width:220,background:"#0A1628",display:"flex",flexDirection:"column",flexShrink:0}}>
+        <div style={{padding:"18px 16px 12px",borderBottom:"1px solid rgba(255,255,255,.07)"}}>
+          <div style={{fontSize:24,fontWeight:800,color:"#fff",letterSpacing:-1}}>NBRelease<span style={{color:"#FCD34D"}}>Orchestrator</span></div>
+          <div style={{fontSize:9,color:"#475569",marginTop:1,letterSpacing:2,textTransform:"uppercase"}}>Release Portal</div>
+        </div>
+        <div style={{padding:"10px 16px",borderBottom:"1px solid rgba(255,255,255,.05)",display:"flex",alignItems:"center",gap:9}}>
+          <Avatar initials={role?.initials} size={30}/>
+          <div>
+            <div style={{fontSize:12,color:"#E2E8F0",fontWeight:700}}>{role?.name}</div>
+            <div style={{fontSize:9,color:"#475569",textTransform:"uppercase",letterSpacing:.5}}>{role?.label}</div>
+          </div>
+        </div>
+        <nav style={{flex:1,padding:"6px 0",overflowY:"auto"}}>
+          {NAV.map(n=>(
+            <div key={n.id} onClick={()=>{setScreen(n.id);setNotifOpen(false);}}
+              style={{display:"flex",alignItems:"center",gap:9,padding:"9px 16px",fontSize:12,color:screen===n.id?"#60A5FA":"#64748B",cursor:"pointer",borderLeft:`3px solid ${screen===n.id?"#34D399":"transparent"}`,background:screen===n.id?"rgba(29,78,216,.18)":"transparent",transition:"all .15s"}}>
+              <span style={{width:16,textAlign:"center",fontSize:14,flexShrink:0}}>{n.ico}</span>
+              <span>{n.label}</span>
+              {n.badge>0&&<span style={{marginLeft:"auto",background:"#B45309",color:"#fff",fontSize:9,fontWeight:700,padding:"1px 6px",borderRadius:100}}>{n.badge}</span>}
+            </div>
+          ))}
+        </nav>
+        <div onClick={()=>setScreen("login")} style={{padding:"12px 16px",borderTop:"1px solid rgba(255,255,255,.07)",display:"flex",alignItems:"center",gap:8,fontSize:11,color:"#475569",cursor:"pointer"}}>
+          <span>↩</span><span>Logout</span>
+        </div>
+      </aside>
+
+      {/* MAIN */}
+      <main style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+        {/* Topbar */}
+        <div style={{background:"#fff",borderBottom:"1px solid #E2E8F0",padding:"12px 24px",display:"flex",alignItems:"center",gap:14,flexShrink:0}}>
+          <div>
+            <div style={{fontSize:18,fontWeight:800,color:"#0A1628"}}>
+              {screen==="dashboard"&&"Dashboard"}
+              {screen==="releases"&&"Release List"}
+              {screen==="detail"&&selected?.key}
+              {screen==="queue"&&"DevOps Deploy Queue"}
+              {screen==="approvals"&&"Pending Approvals"}
+              {screen==="audit"&&"Audit Logs"}
+              {screen==="notifs"&&"Notifications Panel"}
+            </div>
+            <div style={{fontSize:11,color:"#94A3B8",marginTop:2}}>
+              {screen==="dashboard"&&`NBReleaseOrchestrator · Overview · Aug 2025`}
+              {screen==="releases"&&`24 total · 3 pending approval`}
+              {screen==="detail"&&selected?.title}
+              {screen==="queue"&&`2 releases approved · ready to deploy`}
+              {screen==="approvals"&&`pending approvals`}
+              {screen==="notifs"&&`Role-filtered · Email + WebSocket (STOMP) · Deep links`}
+            </div>
+          </div>
+          <div style={{marginLeft:"auto",display:"flex",gap:8,alignItems:"center",position:"relative"}}>
+            {screen==="releases"&&role?.id==="REL_MGR"&&<Btn onClick={()=>openModal("newrelease")} style={{padding:"7px 14px",fontSize:12,background:"#15803D",color:"#fff"}}>+ New Release</Btn>}
+            {screen==="releases"&&<Btn onClick={()=>showToast("📥 CSV export downloading...")} style={{padding:"7px 12px",fontSize:12,background:"#F1F5F9",color:"#334155"}}>⬇ Export CSV</Btn>}
+            <div style={{position:"relative"}}>
+              <Btn onClick={()=>setNotifOpen(o=>!o)} style={{padding:"7px 12px",fontSize:13,background:"#F1F5F9",color:"#334155",position:"relative"}}>
+                🔔
+                {unread>0&&<span style={{position:"absolute",top:-6,right:-6,background:"#B91C1C",color:"#fff",fontSize:8,fontWeight:700,padding:"1px 5px",borderRadius:100}}>{unread}</span>}
+              </Btn>
+              {notifOpen&&<NotifDropdown notifs={notifs} onRead={id=>setNotifs(p=>p.map(n=>n.id===id?{...n,read:true}:n))} onClose={()=>setNotifOpen(false)}/>}
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div style={{flex:1,overflowY:"auto",padding:22}}>
+          {screen==="dashboard"&&<DashboardScreen releases={releases} role={role} onOpen={openRelease}/>}
+          {screen==="releases"&&<ReleasesScreen releases={filteredReleases} role={role} onOpen={openRelease} filter={filter} setFilter={setFilter} q={searchQ} setQ={setSearchQ} onNew={()=>openModal("newrelease")}/>}
+          {screen==="detail"&&selected&&<DetailScreen release={selected} role={role} linkedItems={selLinked} auditEvents={selAudit} onApprove={()=>openModal("approve")} onReject={()=>openModal("reject")} onInitiate={()=>openModal("initiate")} onRollback={()=>openModal("rollback")} onLinkTicket={()=>openModal("link")} onBack={()=>setScreen("releases")} onMarkDeployed={handleMarkDeployed}/>}
+          {screen==="queue"&&<QueueScreen releases={queueRels} onOpen={openRelease}/>}
+          {screen==="approvals"&&<div className="screen-enter">{pendRels.length===0&&<div style={{textAlign:"center",padding:60,background:"#fff",borderRadius:10,color:"#94A3B8"}}>No pending approvals</div>}{pendRels.map(r=><div key={r.id} onClick={()=>openRelease(r)} style={{background:"#fff",borderRadius:10,boxShadow:"0 1px 4px rgba(0,0,0,.07)",marginBottom:12,padding:"16px 20px",display:"flex",alignItems:"center",gap:16,cursor:"pointer"}} className="trow"><span style={FS.tkey}>{r.key}</span><div style={{flex:1}}><div style={{fontWeight:700,fontSize:13,color:"#0A1628"}}>{r.title}</div><div style={{fontSize:11,color:"#64748B",marginTop:2}}>{r.type} · {r.env} · {r.teams} teams · {r.items} items</div></div><StatusBadge status={r.status}/><Btn style={{padding:"7px 14px",fontSize:12,background:"#EFF6FF",color:"#1D4ED8"}}>Review →</Btn></div>)}</div>}
+          {screen==="audit"&&<AuditScreen events={auditEvents} releases={releases}/>}
+          {screen==="notifs"&&<NotifsScreen notifs={notifs} onRead={id=>setNotifs(p=>p.map(n=>n.id===id?{...n,read:true}:n))} onMarkAll={()=>setNotifs(p=>p.map(n=>({...n,read:true})))}/>}
+        </div>
+      </main>
+
+      {/* MODALS */}
+      {modals.approve    && <ConfirmModal title="Approve Release" msg={`Approve ${selected?.key}? All stakeholders will be notified via email and WebSocket push.`} confirmLabel="✓ Approve Release" confirmColor="#15803D" onConfirm={handleApprove} onCancel={()=>closeModal("approve")}/>}
+      {modals.initiate   && <ConfirmModal title="Initiate Deployment" msg={`Start deployment of ${selected?.key}? Status will move to IN_PROGRESS and all stakeholders notified.`} confirmLabel="🚀 Initiate" confirmColor="#1D4ED8" onConfirm={handleInitiate} onCancel={()=>closeModal("initiate")}/>}
+      {modals.reject     && <ReasonModal title="Reject Release" placeholder="Reason for rejection (required)..." confirmLabel="✗ Reject" confirmColor="#B91C1C" onConfirm={handleReject} onCancel={()=>closeModal("reject")}/>}
+      {modals.rollback   && <ReasonModal title="Trigger Rollback" placeholder="Reason for rollback (required)..." confirmLabel="⚠ Rollback" confirmColor="#B45309" onConfirm={handleRollback} onCancel={()=>closeModal("rollback")}/>}
+      {modals.link       && <LinkModal onConfirm={handleLink} onCancel={()=>closeModal("link")}/>}
+      {modals.newrelease && <NewReleaseModal onConfirm={handleNewRelease} onCancel={()=>closeModal("newrelease")}/>}
+
+      {/* TOAST */}
+      {toast && (
+        <div style={{position:"fixed",bottom:24,right:24,padding:"13px 22px",borderRadius:10,color:"#fff",fontSize:13,fontWeight:700,boxShadow:"0 6px 24px rgba(0,0,0,.25)",zIndex:999,animation:"fadein .2s",background:toast.type==="error"?"#B91C1C":toast.type==="warn"?"#B45309":"#064E3B",maxWidth:360}}>
+          {toast.msg}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App/>);
+</script>
+</body>
+</html>
