@@ -9,12 +9,6 @@ import java.util.Map;
 
 import static com.nbro.domain.common.AppEnums.ReleaseStatus.*;
 
-/**
- * Validates release workflow transitions.
- * <p>
- * Think of this as a traffic light system for releases — it controls
- * which status changes are allowed and which ones are not.
- */
 @Component
 public class ReleaseValidators {
 

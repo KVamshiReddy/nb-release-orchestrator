@@ -33,6 +33,8 @@ public class ReleaseService {
      */
     private final ReleaseRepository releaseRepository;
 
+    private final AuditLogService auditLogService;
+
     /**
      * Creates a new release request in the system.
      * <p>
@@ -112,7 +114,10 @@ public class ReleaseService {
     public Release updateStatus(UUID releaseId, AppEnums.ReleaseStatus state) {
         Release document = getReleaseById(releaseId);
         ReleaseValidators.isValidWorkFlow(document.getReleaseStatus(), state);
+        AppEnums.ReleaseStatus previousStatus = document.getReleaseStatus();
         document.setReleaseStatus(state);
-        return releaseRepository.save(document);
+        Release saved = releaseRepository.save(document);
+        auditLogService.logStatusChange(document.getId(), document.getCreatedBy(), previousStatus, state);
+        return saved;
     }
 }
