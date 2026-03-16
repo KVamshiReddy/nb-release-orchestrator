@@ -1,8 +1,10 @@
 package com.nbro.service;
 
 import com.nbro.Exceptions.ErrorMessages;
+import com.nbro.domain.common.AppEnums;
 import com.nbro.domain.dto.ReleaseRequestDTO;
 import com.nbro.domain.entity.Release;
+import com.nbro.helpers.ReleaseValidators;
 import com.nbro.repository.ReleaseRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -105,5 +107,12 @@ public class ReleaseService {
     public Release getReleaseById(UUID releaseId) {
         return releaseRepository.findById(releaseId)
                 .orElseThrow(() -> new RuntimeException("Release Not Found"));
+    }
+
+    public Release updateStatus(UUID releaseId, AppEnums.ReleaseStatus state) {
+        Release document = getReleaseById(releaseId);
+        ReleaseValidators.isValidWorkFlow(document.getReleaseStatus(), state);
+        document.setReleaseStatus(state);
+        return releaseRepository.save(document);
     }
 }

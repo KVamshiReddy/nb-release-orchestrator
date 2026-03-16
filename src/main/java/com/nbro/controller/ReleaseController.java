@@ -1,5 +1,6 @@
 package com.nbro.controller;
 
+import com.nbro.domain.common.AppEnums;
 import com.nbro.domain.dto.ReleaseRequestDTO;
 import com.nbro.domain.entity.Release;
 import com.nbro.service.ReleaseService;
@@ -33,6 +34,12 @@ public class ReleaseController {
     @GetMapping("/")
     public List<Release> getAllReleases() {
         return releaseService.getAllReleases();
+    }
+
+    @Operation(summary = "Update a Release Status")
+    @PatchMapping("/{id}/status")
+    public Release updateReleaseStatus(@PathVariable UUID id, @RequestParam AppEnums.ReleaseStatus newStatus) {
+        return releaseService.updateStatus(id, newStatus);
     }
 
 
