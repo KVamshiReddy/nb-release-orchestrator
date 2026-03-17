@@ -81,12 +81,14 @@ public class SecurityConfig {
                         // /api/v1/auth/** — login page (you can't need a token to log in!)
                         // /swagger-ui/** — API documentation page
                         // /v3/api-docs/** — Swagger technical docs
+                        // /webhook/** — Any hook cannot be authenticated with a token
                         .requestMatchers(
                                 "/api/v1/auth/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**",
-                                "/webjars/**"
+                                "/webjars/**",
+                                "/api/v1/webhooks/**"
                         ).permitAll()
                         // Every other endpoint requires a valid JWT token
                         .anyRequest().authenticated())

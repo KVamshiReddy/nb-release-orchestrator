@@ -5,6 +5,7 @@ import com.nbro.domain.common.AppEnums;
 import com.nbro.domain.dto.ReleaseRequestDTO;
 import com.nbro.domain.entity.Release;
 import com.nbro.helpers.ReleaseValidators;
+import com.nbro.helpers.SecurityUtils;
 import com.nbro.repository.ReleaseRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -113,11 +114,17 @@ public class ReleaseService {
 
     public Release updateStatus(UUID releaseId, AppEnums.ReleaseStatus state) {
         Release document = getReleaseById(releaseId);
+        String email = SecurityUtils.getLoggedInUserEmail();
         ReleaseValidators.isValidWorkFlow(document.getReleaseStatus(), state);
         AppEnums.ReleaseStatus previousStatus = document.getReleaseStatus();
         document.setReleaseStatus(state);
         Release saved = releaseRepository.save(document);
-        auditLogService.logStatusChange(document.getId(), document.getCreatedBy(), previousStatus, state);
+        auditLogService.logStatusChange(document.getId(), email, previousStatus, state);
         return saved;
     }
+
+    public boolean releaseExistsByJiraKey(String jiraKey) {
+        return releaseRepository.findByJiraKeyIgnoreCase(jiraKey).isPresent();
+    }
+
 }
