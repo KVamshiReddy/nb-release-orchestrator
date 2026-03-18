@@ -22,6 +22,7 @@ public class ReleaseValidators {
      */
     private static final Map<AppEnums.ReleaseStatus,
             List<AppEnums.ReleaseStatus>> validFlows = new HashMap<>();
+    private static final Map<String, AppEnums.Role> TRANSITION_ROLES = new HashMap<>();
 
     static {
         validFlows.put(DRAFT, List.of(PENDING_REVIEW));
@@ -31,6 +32,18 @@ public class ReleaseValidators {
         validFlows.put(IN_PROGRESS, List.of(DEPLOYED, ROLLED_BACK));
         validFlows.put(DEPLOYED, List.of(VERIFIED));
         validFlows.put(ROLLED_BACK, List.of(PENDING_REVIEW));
+
+        TRANSITION_ROLES.put("DRAFT->PENDING_REVIEW", AppEnums.Role.DEV);
+        TRANSITION_ROLES.put("PENDING_REVIEW->APPROVED", AppEnums.Role.RELEASE_MANAGER);
+        TRANSITION_ROLES.put("PENDING_REVIEW->REJECTED", AppEnums.Role.RELEASE_MANAGER);
+        TRANSITION_ROLES.put("PENDING_REVIEW->CAB_REVIEW", AppEnums.Role.RELEASE_MANAGER);
+        TRANSITION_ROLES.put("CAB_REVIEW->APPROVED", AppEnums.Role.RELEASE_MANAGER);
+        TRANSITION_ROLES.put("CAB_REVIEW->REJECTED", AppEnums.Role.RELEASE_MANAGER);
+        TRANSITION_ROLES.put("APPROVED->IN_PROGRESS", AppEnums.Role.DEVOPS);
+        TRANSITION_ROLES.put("IN_PROGRESS->DEPLOYED", AppEnums.Role.DEVOPS);
+        TRANSITION_ROLES.put("IN_PROGRESS->ROLLED_BACK", AppEnums.Role.DEVOPS);
+        TRANSITION_ROLES.put("DEPLOYED->VERIFIED", AppEnums.Role.DEV);
+
     }
 
     /**
@@ -63,4 +76,20 @@ public class ReleaseValidators {
             );
         }
     }
+
+    public static void isAuthorizedForTransition(
+            AppEnums.ReleaseStatus from,
+            AppEnums.ReleaseStatus to,
+            AppEnums.Role userRole) {
+
+        String key = from + "->" + to;
+        AppEnums.Role requiredRole = TRANSITION_ROLES.get(key);
+
+        if (requiredRole != null && !requiredRole.equals(userRole)) {
+            throw new IllegalStateException(
+                    "You are not authorized to transition from " + from + " to " + to
+            );
+        }
+    }
+
 }

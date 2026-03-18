@@ -49,4 +49,27 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ExceptionResponse> handleIllegalState(IllegalStateException e) {
+        ExceptionResponse response = new ExceptionResponse(
+                LocalDateTime.now(),
+                e.getMessage(),
+                403,
+                "Forbidden"
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> handleResourceNotFound(ResourceNotFoundException e) {
+        ExceptionResponse response = new ExceptionResponse(
+                LocalDateTime.now(),
+                e.getMessage(),
+                404,
+                "Not Found"
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
 }

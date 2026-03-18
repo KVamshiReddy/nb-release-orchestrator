@@ -8,6 +8,7 @@ import com.nbro.service.AuditLogService;
 import com.nbro.service.ReleaseService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class ReleaseController {
     private final AuditLogService auditLogService;
 
     @Operation(summary = "Create a New Release Request")
+    @PreAuthorize("!hasRole('STAKEHOLDER')")
     @PostMapping("/")
     public Release createRelease(@RequestBody ReleaseRequestDTO request) {
         return releaseService.createRelease(request);

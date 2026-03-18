@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
 import javax.crypto.SecretKey;
 import java.util.Date;
 
@@ -15,7 +16,7 @@ import java.util.Date;
  * Think of it as a token factory — it creates tokens when users log in,
  * reads information from tokens on incoming requests, and checks
  * whether a token is still valid or has been tampered with.
- *
+ * <p>
  * A JWT token looks like this: eyJhbGc.eyJzdWIi.SflKxw
  * It has three parts separated by dots:
  * 1. Header — what algorithm was used to sign it
@@ -47,6 +48,7 @@ public class JwtTokenProvider {
     /**
      * Converts our plain text secret into a cryptographic key
      * that the JJWT library can use to sign and verify tokens.
+     *
      * @return a SecretKey object ready to use for signing
      */
     private SecretKey getSecretKey() {
@@ -57,13 +59,13 @@ public class JwtTokenProvider {
      * Creates a new JWT token for a user after they successfully log in.
      * The token contains the user's email and role so we can identify
      * them on future requests without hitting the database every time.
-     *
+     * <p>
      * Example token content (decoded):
      * {
-     *   "sub": "vamshi@example.com",
-     *   "role": "ROLE_DEV",
-     *   "iat": 1234567890,   <- when it was created
-     *   "exp": 1234654290    <- when it expires
+     * "sub": "vamshi@example.com",
+     * "role": "ROLE_DEV",
+     * "iat": 1234567890,   <- when it was created
+     * "exp": 1234654290    <- when it expires
      * }
      *
      * @param user - the user who just logged in
@@ -89,7 +91,7 @@ public class JwtTokenProvider {
     /**
      * Reads a JWT token and extracts the user's email from it.
      * This is used on every authenticated request to know who is making it.
-     *
+     * <p>
      * If the token is expired or tampered with, this method will
      * throw an exception which is caught by validateToken.
      *
@@ -115,7 +117,7 @@ public class JwtTokenProvider {
      * - Has not expired
      * - Has not been tampered with
      * - Was signed with our secret key
-     *
+     * <p>
      * We do this by simply trying to read the email from the token.
      * If that succeeds, the token is valid.
      * If anything goes wrong, the token is invalid and we return false.
@@ -133,5 +135,14 @@ public class JwtTokenProvider {
             logger.error("Invalid token: {}", e.getMessage());
             return false;
         }
+    }
+
+    public String getRoleFromToken(String token) {
+        return Jwts.parser()
+                .verifyWith(getSecretKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("role", String.class);
     }
 }
