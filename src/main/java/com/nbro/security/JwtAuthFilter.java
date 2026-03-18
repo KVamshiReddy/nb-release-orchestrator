@@ -1,15 +1,18 @@
 package com.nbro.security;
 
-import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -33,10 +36,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
      * It checks if the request has a valid JWT token and if so,
      * marks the user as authenticated for this request.
      *
-     * @param request    - the incoming HTTP request (contains headers, body etc.)
-     * @param response   - the outgoing HTTP response
+     * @param request     - the incoming HTTP request (contains headers, body etc.)
+     * @param response    - the outgoing HTTP response
      * @param filterChain - the chain of filters — we must call this at the end
-     *                     to pass the request to the next filter or controller
+     *                    to pass the request to the next filter or controller
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -63,19 +66,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             boolean isValid = jwtTokenProvider.validateToken(token);
 
             if (isValid) {
-                // Extract the user's email from the token
                 String email = jwtTokenProvider.getEmailFromToken(token);
+                String role = jwtTokenProvider.getRoleFromToken(token);
 
-                // Tell Spring Security "this user is authenticated"
-                // We pass:
-                // - email as the identity of the user
-                // - null for password (we don't need it after token validation)
-                // - List.of() for roles/permissions (we will add roles later)
+                // Convert role string to a GrantedAuthority Spring Security understands
+                List<GrantedAuthority> authorities = List.of(
+                        new SimpleGrantedAuthority(role)
+                );
+
                 UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(email, null, List.of());
-
-                // Store the authentication in Spring's security context
-                // so that controllers can access the current user's info
+                        new UsernamePasswordAuthenticationToken(email, null, authorities);
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
         }

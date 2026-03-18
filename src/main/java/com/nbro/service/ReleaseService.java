@@ -34,6 +34,8 @@ public class ReleaseService {
      */
     private final ReleaseRepository releaseRepository;
 
+    private final NotificationService notificationService;
+
     private final AuditLogService auditLogService;
 
     /**
@@ -115,11 +117,14 @@ public class ReleaseService {
     public Release updateStatus(UUID releaseId, AppEnums.ReleaseStatus state) {
         Release document = getReleaseById(releaseId);
         String email = SecurityUtils.getLoggedInUserEmail();
-        ReleaseValidators.isValidWorkFlow(document.getReleaseStatus(), state);
-        AppEnums.ReleaseStatus previousStatus = document.getReleaseStatus();
+        AppEnums.Role userRole = SecurityUtils.getCurrentUserRole();
+        AppEnums.ReleaseStatus previousStatus = document.getReleaseStatus(); // capture FIRST
+        ReleaseValidators.isValidWorkFlow(previousStatus, state);
+        ReleaseValidators.isAuthorizedForTransition(previousStatus, state, userRole);
         document.setReleaseStatus(state);
         Release saved = releaseRepository.save(document);
-        auditLogService.logStatusChange(document.getId(), email, previousStatus, state);
+        auditLogService.logStatusChange(saved.getId(), email, previousStatus, state);
+        notificationService.sendStatusChangeEmail(email, document.getJiraKey(), previousStatus, state);
         return saved;
     }
 
