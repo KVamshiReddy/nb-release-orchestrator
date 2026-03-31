@@ -1,5 +1,6 @@
 package com.nbro.service;
 
+import com.nbro.Exceptions.ErrorMessages;
 import com.nbro.domain.dto.LoginRequest;
 import com.nbro.domain.dto.LoginResponse;
 import com.nbro.domain.entity.User;
@@ -64,14 +65,14 @@ public class AuthService {
         // If no user is found, throw an error immediately
         User user = userRepository
                 .findByEmailIgnoreCase(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User Not Found"));
+                .orElseThrow(() -> new RuntimeException(String.format(ErrorMessages.INVALID_CREDENTIALS, "")));
 
         // Hash the entered password and compare it to the stored hash
         // If they don't match, the password is wrong
         // We intentionally use a vague error message so attackers
         // can't tell whether the email or password was wrong
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new RuntimeException("Username or the Password are invalid");
+            throw new RuntimeException(String.format(ErrorMessages.INVALID_CREDENTIALS, ""));
         }
 
         // Password is correct — generate a JWT token for this user

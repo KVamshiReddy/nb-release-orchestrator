@@ -80,6 +80,13 @@ public class Release {
     /** ID of the release manager responsible for approving this release */
     private UUID releaseManagerId;
 
+    /** AI-generated human-readable summary of this release */
+    @Column(columnDefinition = "TEXT")
+    private String aiGeneratedSummary;
+
+    /** When the AI summary was last generated */
+    private LocalDateTime aiSummaryGeneratedAt;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
