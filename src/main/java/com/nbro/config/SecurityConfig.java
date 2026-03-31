@@ -16,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -80,13 +81,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // Here we define which pages/endpoints are open to everyone and which ones require the user to be logged in.
                 .authorizeHttpRequests(auth -> auth
-                        // These endpoints don't need a token:
-                        // /api/v1/auth/** — login page (you can't need a token to log in!)
-                        // /swagger-ui/** — API documentation page
-                        // /v3/api-docs/** — Swagger technical docs
-                        // /webhook/** — Any hook cannot be authenticated with a token
+                        // Allow all OPTIONS preflight requests (required for CORS)
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
                                 "/api/v1/auth/**",
                                 "/swagger-ui/**",
@@ -95,7 +92,6 @@ public class SecurityConfig {
                                 "/webjars/**",
                                 "/api/v1/webhooks/**"
                         ).permitAll()
-                        // Every other endpoint requires a valid JWT token
                         .anyRequest().authenticated())
 
                 // We add our JWT checker BEFORE Spring's default login checker.
