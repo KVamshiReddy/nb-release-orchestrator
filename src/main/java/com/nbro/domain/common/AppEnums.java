@@ -40,5 +40,14 @@ public class AppEnums {
         REJECTED
     }
 
+    public enum ApprovalStatus {
+        APPROVED,
+        REJECTED
+    }
 
+    public enum RiskLevel {
+        LOW,
+        MEDIUM,
+        HIGH
+    }
 }
