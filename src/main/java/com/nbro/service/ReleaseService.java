@@ -1,6 +1,7 @@
 package com.nbro.service;
 
 import com.nbro.Exceptions.ErrorMessages;
+import com.nbro.Exceptions.ResourceNotFoundException;
 import com.nbro.domain.common.AppEnums;
 import com.nbro.domain.dto.ReleaseRequestDTO;
 import com.nbro.domain.entity.Release;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -52,7 +54,13 @@ public class ReleaseService {
      * @return the saved Release object with its generated ID
      * @throws IllegalArgumentException if any validation fails
      */
+    @Transactional
     public Release createRelease(ReleaseRequestDTO request) {
+
+        // Validate Jira key is present
+        if (request.getJiraKey() == null || request.getJiraKey().trim().isEmpty()) {
+            throw new IllegalArgumentException(ErrorMessages.DETAILS_NOT_VALID);
+        }
 
         // Validate Jira key format — must be letters, dash, then numbers e.g. RM-1
         if (!request.getJiraKey().toUpperCase().matches("^[A-Z]+-[0-9]+$")) {
@@ -111,9 +119,11 @@ public class ReleaseService {
      */
     public Release getReleaseById(UUID releaseId) {
         return releaseRepository.findById(releaseId)
-                .orElseThrow(() -> new RuntimeException("Release Not Found"));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format(ErrorMessages.RELEASE_NOT_FOUND, releaseId)));
     }
 
+    @Transactional
     public Release updateStatus(UUID releaseId, AppEnums.ReleaseStatus state) {
         Release document = getReleaseById(releaseId);
         String email = SecurityUtils.getLoggedInUserEmail();
